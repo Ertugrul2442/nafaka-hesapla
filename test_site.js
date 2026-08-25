@@ -31,48 +31,58 @@ function Ogesi(etiket) {
 
 const idler = ["form", "tutar", "basAy", "basYil", "bitAy", "bitYil", "kapsam",
                "oranNot", "ozet", "cetvelBaslik", "cetvelAlt", "govde",
-               "uyarilar", "kopyala", "yazdir", "kunye"];
-const kayit = {};
-idler.forEach(id => { kayit[id] = Ogesi(id === "form" ? "form" : "div"); });
-kayit.tutar.value = "2000";
-kayit.basYil.value = "2020";
+               "uyarilar", "kopyala", "yazdir", "kunye", "indir", "indirNot"];
 
-const radyolar = { endeks: [], oranTuru: [], referans: [] };
-const tumRadyolar = [];
-[["endeks", "TUFE", true], ["endeks", "UFE", false],
- ["oranTuru", "ort12", true], ["oranTuru", "yillik", false],
- ["referans", "onceki", true], ["referans", "ayni", false]].forEach(([ad, deger, isaretli]) => {
-  const o = Ogesi("input"); o.type = "radio"; o.name = ad; o.value = deger; o.checked = isaretli;
-  radyolar[ad].push(o); tumRadyolar.push(o);
-});
+/* Sayfayi bastan kurup calistirir. protokol "file:" verilirse sayfa,
+   bilgisayardan acilmis gibi davranmali (indirme baglantisi gizlenir). */
+function sayfayiKur(protokol) {
+  const kayit = {};
+  idler.forEach(id => { kayit[id] = Ogesi(id === "form" ? "form" : "div"); });
+  kayit.tutar.value = "2000";
+  kayit.basYil.value = "2020";
 
-const document = {
-  getElementById: id => kayit[id] || null,
-  createElement: Ogesi,
-  querySelector(s) {
-    const m = /input\[name="(\w+)"\]:checked/.exec(s);
-    return m ? (radyolar[m[1]].find(r => r.checked) || null) : null;
-  },
-  querySelectorAll: () => tumRadyolar
-};
+  const radyolar = { endeks: [], oranTuru: [], referans: [] };
+  const tumRadyolar = [];
+  [["endeks", "TUFE", true], ["endeks", "UFE", false],
+   ["oranTuru", "ort12", true], ["oranTuru", "yillik", false],
+   ["referans", "onceki", true], ["referans", "ayni", false]].forEach(([ad, deger, isaretli]) => {
+    const o = Ogesi("input"); o.type = "radio"; o.name = ad; o.value = deger; o.checked = isaretli;
+    radyolar[ad].push(o); tumRadyolar.push(o);
+  });
 
-const pano = {};
-const window = {
-  document,
-  navigator: { clipboard: { writeText(t) { pano.metin = t; return Promise.resolve(); } } },
-  print() { pano.yazdirildi = true; },
-  Intl, setTimeout
-};
-window.window = window;
+  const document = {
+    getElementById: id => kayit[id] || null,
+    createElement: Ogesi,
+    querySelector(s) {
+      const m = /input\[name="(\w+)"\]:checked/.exec(s);
+      return m ? (radyolar[m[1]].find(r => r.checked) || null) : null;
+    },
+    querySelectorAll: () => tumRadyolar
+  };
 
-/* --- gomulu betikleri sirayla calistir -------------------------------- */
-const baglam = vm.createContext(window);
-const betikler = [...html.matchAll(/<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]);
-if (betikler.length !== 3) throw new Error("3 gomulu betik bekleniyordu, bulunan: " + betikler.length);
-betikler.forEach((b, i) => {
-  try { vm.runInContext(b, baglam); }
-  catch (e) { throw new Error("gomulu betik #" + (i + 1) + " patladi: " + e.message); }
-});
+  const pano = {};
+  const window = {
+    document,
+    location: { protocol: protokol },
+    navigator: { clipboard: { writeText(t) { pano.metin = t; return Promise.resolve(); } } },
+    print() { pano.yazdirildi = true; },
+    Intl, setTimeout
+  };
+  window.window = window;
+
+  const baglam = vm.createContext(window);
+  const betikler = [...html.matchAll(/<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+  if (betikler.length !== 3) throw new Error("3 gomulu betik bekleniyordu, bulunan: " + betikler.length);
+  betikler.forEach((b, i) => {
+    try { vm.runInContext(b, baglam); }
+    catch (e) { throw new Error("gomulu betik #" + (i + 1) + " patladi: " + e.message); }
+  });
+  return { kayit, radyolar, tumRadyolar, pano, window };
+}
+
+/* --- sayfayi yayindaki gibi (https) kur ------------------------------- */
+const kurulum = sayfayiKur("https:");
+const { kayit, radyolar, tumRadyolar, pano, window } = kurulum;
 
 /* --- olcumler --------------------------------------------------------- */
 let gecen = 0, kalan = 0;
@@ -128,6 +138,32 @@ kayit.bitYil.value = "2040";
 kayit.form.tetikle("input");
 kontrol("veri bitince uyari basildi", kayit.uyarilar.innerHTML.includes("uyari"),
         kayit.uyarilar.innerHTML.slice(0, 140));
+
+console.log("\n--- internetsiz kullanim (engelli agda ise yarayacak kisim) ---");
+kontrol("indirme baglantisi var", /id="indir"[^>]*download=/.test(html));
+kontrol("yayindayken indirme baglantisi gorunur", kayit.indir.style.display !== "none");
+
+const disHostlar = [...new Set([...html.matchAll(/https?:\/\/([a-z0-9.-]+)/g)].map(m => m[1]))]
+  .filter(h => !h.includes("w3.org"));
+kontrol("disa giden tek bagimlilik Google Fonts",
+        disHostlar.every(h => h.startsWith("fonts.g")), disHostlar.join(", "));
+console.log("       dis host: " + disHostlar.join(", "));
+
+kontrol("web fontu gelmezse Windows karsiligi var",
+        /--yazi-sayi:"IBM Plex Mono",Consolas/.test(html) &&
+        /--yazi-baslik:"Source Serif 4",Georgia/.test(html) &&
+        /--yazi-govde:"Source Sans 3","Segoe UI"/.test(html));
+kontrol("sert kodlu yazi yigini kalmamis", !/font-family:"(IBM Plex Mono|Source Serif 4|Source Sans 3)/.test(html));
+
+const yerel = sayfayiKur("file:");
+kontrol("file:// ile acilinca indirme baglantisi gizleniyor",
+        yerel.kayit.indir.style.display === "none");
+kontrol("file:// ile acilinca not degisiyor",
+        yerel.kayit.indirNot.textContent.includes("bilgisayarında duruyor"),
+        yerel.kayit.indirNot.textContent);
+kontrol("file:// ile de cetvel uretiliyor",
+        (yerel.kayit.govde.innerHTML.match(/<tr/g) || []).length >= 6);
+kontrol("file:// ile de sayilar dogru", yerel.kayit.govde.innerHTML.includes(tufeSon));
 
 console.log("\n--- belge kabugu (GitHub Pages icin) ---");
 kontrol("doctype var", /^<!doctype html>/i.test(html.trim()));

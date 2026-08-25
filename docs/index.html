@@ -33,6 +33,11 @@
   --uyari-cizgi:#e8d5a8;
   --golge:0 1px 1px rgba(25,29,36,.04), 0 6px 20px -8px rgba(25,29,36,.12);
   --olcek:1;
+  /* Web fontu engellenen agda (adliye, kurum ici) gelmeyebilir; bu durumda
+     Windows'ta hazir bulunan iyi karsiliklar devreye giriyor. */
+  --yazi-baslik:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --yazi-govde:"Source Sans 3","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  --yazi-sayi:"IBM Plex Mono",Consolas,"Cascadia Mono","DejaVu Sans Mono",monospace;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
@@ -78,7 +83,7 @@ body{
   margin:0;
   background:var(--kagit);
   color:var(--murekkep);
-  font-family:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  font-family:var(--yazi-govde);
   font-size:16px;
   line-height:1.55;
   -webkit-font-smoothing:antialiased;
@@ -92,13 +97,13 @@ body{
   gap:18px;padding-bottom:20px;border-bottom:2px solid var(--cizgi-kalin);
 }
 .ust h1{
-  font-family:"Source Serif 4",Georgia,serif;
+  font-family:var(--yazi-baslik);
   font-weight:700;font-size:clamp(28px,4vw,38px);line-height:1.1;
   margin:0 0 8px;letter-spacing:-.015em;text-wrap:balance;
 }
 .ust p{margin:0;color:var(--ara);font-size:15.5px;max-width:56ch;text-wrap:pretty}
 .kapsam{
-  flex:0 0 auto;font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.7;
+  flex:0 0 auto;font-family:var(--yazi-sayi);font-size:12px;line-height:1.7;
   color:var(--ara);text-align:right;
 }
 .kapsam b{display:block;color:var(--murekkep);font-weight:600;font-size:12.5px}
@@ -113,7 +118,7 @@ body{
   box-shadow:var(--golge);padding:20px;
 }
 .panel > h2{
-  font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
+  font-family:var(--yazi-sayi);font-size:11px;font-weight:600;
   text-transform:uppercase;letter-spacing:.11em;color:var(--ara);
   margin:0 0 18px;padding-bottom:10px;border-bottom:1px solid var(--cizgi);
 }
@@ -125,9 +130,9 @@ body{
 input,select{
   width:100%;padding:9px 11px;border:1px solid var(--cizgi-kalin);border-radius:3px;
   background:var(--yuzey-ic);color:var(--murekkep);
-  font-family:"IBM Plex Mono",monospace;font-size:14px;
+  font-family:var(--yazi-sayi);font-size:14px;
 }
-select{font-family:"Source Sans 3",sans-serif;font-size:14.5px}
+select{font-family:var(--yazi-govde);font-size:14.5px}
 input:focus-visible,select:focus-visible{
   outline:2px solid var(--aksan);outline-offset:1px;border-color:var(--aksan);
 }
@@ -154,11 +159,11 @@ input:focus-visible,select:focus-visible{
   background:var(--cizgi);border:1px solid var(--cizgi);border-radius:4px;overflow:hidden;margin-bottom:22px}
 .ozet > div{background:var(--yuzey);padding:14px 16px}
 .ozet .et{
-  font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:500;
+  font-family:var(--yazi-sayi);font-size:10.5px;font-weight:500;
   text-transform:uppercase;letter-spacing:.09em;color:var(--ara);
 }
 .ozet .dg{
-  font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+  font-family:var(--yazi-sayi);font-variant-numeric:tabular-nums;
   font-size:21px;font-weight:600;letter-spacing:-.02em;margin-top:5px;line-height:1.2;
 }
 .ozet .bas .dg{color:var(--aksan);font-size:24px}
@@ -171,14 +176,14 @@ input:focus-visible,select:focus-visible{
   padding:14px 18px;border-bottom:1px solid var(--cizgi);background:var(--yuzey-ic);
 }
 .cetvelUst h2{
-  font-family:"Source Serif 4",Georgia,serif;font-size:17px;font-weight:600;margin:0;
+  font-family:var(--yazi-baslik);font-size:17px;font-weight:600;margin:0;
 }
 .cetvelUst span{font-size:13px;color:var(--ara)}
 .kaydir{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:14.5px}
 th,td{padding:11px 14px;text-align:right;white-space:nowrap}
 th{
-  font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:500;
+  font-family:var(--yazi-sayi);font-size:10.5px;font-weight:500;
   text-transform:uppercase;letter-spacing:.09em;color:var(--ara);
   border-bottom:1px solid var(--cizgi-kalin);
 }
@@ -187,16 +192,16 @@ tbody tr:last-child td{border-bottom:none}
 th:first-child,td:first-child{text-align:left}
 .donem{font-weight:500}
 .donem small{display:block;font-size:11.5px;color:var(--ara);font-weight:400;margin-top:1px}
-.sayi{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-size:14px}
+.sayi{font-family:var(--yazi-sayi);font-variant-numeric:tabular-nums;font-size:14px}
 .tutar{font-weight:600}
 .rozet{
-  display:inline-block;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+  display:inline-block;font-family:var(--yazi-sayi);font-variant-numeric:tabular-nums;
   font-size:13px;font-weight:600;color:var(--aksan);
   background:var(--aksan-yumusak);border:1px solid var(--aksan-cizgi);
   border-radius:3px;padding:2px 8px;
 }
 .rozet.yok{color:var(--ara);background:var(--yuzey-ic);border-color:var(--cizgi);font-weight:400}
-.refay{display:block;font-size:11px;color:var(--ara);margin-top:3px;font-family:"Source Sans 3",sans-serif}
+.refay{display:block;font-size:11px;color:var(--ara);margin-top:3px;font-family:var(--yazi-govde)}
 tbody tr.sonDonem td{background:var(--aksan-yumusak)}
 tbody tr.sonDonem .tutar{color:var(--aksan)}
 
@@ -210,14 +215,15 @@ tbody tr.sonDonem .tutar{color:var(--aksan)}
 
 /* ---------- dugmeler ---------- */
 .eylem{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
-button{
-  font-family:"Source Sans 3",sans-serif;font-size:14px;font-weight:600;
+button,.dugme{
+  display:inline-block;text-decoration:none;
+  font-family:var(--yazi-govde);font-size:14px;font-weight:600;
   padding:9px 16px;border-radius:3px;cursor:pointer;
   border:1px solid var(--cizgi-kalin);background:var(--yuzey);color:var(--murekkep);
   transition:border-color .12s,color .12s;
 }
-button:hover{border-color:var(--aksan);color:var(--aksan)}
-button:focus-visible{outline:2px solid var(--aksan);outline-offset:2px}
+button:hover,.dugme:hover{border-color:var(--aksan);color:var(--aksan)}
+button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline-offset:2px}
 
 /* ---------- dipnot ---------- */
 .dip{
@@ -226,7 +232,7 @@ button:focus-visible{outline:2px solid var(--aksan);outline-offset:2px}
 }
 .dip p{margin:0}
 .dip strong{color:var(--murekkep);font-weight:600}
-.dip .kunye{font-family:"IBM Plex Mono",monospace;font-size:11.5px}
+.dip .kunye{font-family:var(--yazi-sayi);font-size:11.5px}
 
 @media (prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}
@@ -337,13 +343,17 @@ button:focus-visible{outline:2px solid var(--aksan);outline-offset:2px}
       <div class="eylem">
         <button type="button" id="kopyala">Cetveli kopyala</button>
         <button type="button" id="yazdir">Yazdır / PDF</button>
+        <a class="dugme" id="indir" href="index.html" download="nafaka-cetveli.html">Bilgisayarına indir</a>
       </div>
+      <p class="not" id="indirNot">İndirdiğin dosya internetsiz de çalışır — çift tıklaman yeterli.
+        Adliyede siteye erişemezsen bu işini görür.</p>
     </main>
   </div>
 
   <footer class="dip">
     <p><strong>Veri kaynağı.</strong> TÜİK Veri Portalı, resmî aylık fiyat endeksi serileri. TÜİK yeni ayı her ayın 3'ünde yayımlıyor; bu sayfa onu kendiliğinden alıp güncelliyor. <span id="kunye" class="kunye"></span></p>
     <p><strong>“On iki aylık ortalama” ne demek.</strong> Son 12 ayın endeks ortalamasının, ondan önceki 12 ayın ortalamasına göre değişimi. Tek bir ayın sıçramasından az etkilendiği için nafaka kararlarında en sık bu ölçü geçer. “Yıllık” ise yalnız o ayın, geçen yılın aynı ayına göre değişimidir.</p>
+    <p><strong>İnternetsiz kullanım.</strong> Sayfanın tamamı tek dosya: veri de hesap da içinde. “Bilgisayarına indir” dedikten sonra dosyayı çift tıklayarak internetsiz açabilir, USB'yle taşıyabilir, e-postayla gönderebilirsin.</p>
     <p><strong>Bu bir hesap makinesidir, hukuki görüş değildir.</strong> Kararındaki artış maddesinin lafzı — hangi endeks, hangi oran, hangi tarih — sonucu değiştirir. Kararı okuyup seçenekleri ona göre ayarla.</p>
   </footer>
 </div>
@@ -591,6 +601,13 @@ button:focus-visible{outline:2px solid var(--aksan);outline-offset:2px}
   });
 
   $("yazdir").addEventListener("click", function(){ window.print(); });
+
+  // Sayfa zaten bilgisayardan (file://) aciliyorsa indirmenin anlami yok.
+  if (location.protocol === "file:") {
+    var i = $("indir"); if (i) i.style.display = "none";
+    var n = $("indirNot");
+    if (n) n.textContent = "Bu dosya bilgisayarında duruyor; internet olmadan da çalışıyor.";
+  }
 
   $("form").addEventListener("input", tazele);
   $("form").addEventListener("change", tazele);
