@@ -11,7 +11,7 @@
    "ad": "TÜFE (Tüketici Fiyat Endeksi)",
    "veri_seti": "TR,DF_TUFE_SDMX_TT10,1.0",
    "ilk_ay": "2005-01",
-   "son_ay": "2026-07",
+   "son_ay": "2026-06",
    "aylik": {
     "2005-01": {
      "endeks": 3.596523,
@@ -1302,11 +1302,6 @@
      "endeks": 129.99,
      "yillik": 32.11,
      "ort12": 32.03
-    },
-    "2026-07": {
-     "endeks": 132.31,
-     "yillik": 31.75,
-     "ort12": 31.9
     }
    },
    "yillik_aralik": {
@@ -1400,7 +1395,7 @@
    "ad": "Yİ-ÜFE (Yurt İçi Üretici Fiyat Endeksi)",
    "veri_seti": "TR,DF_YIUFE_EDO_V1,1.0",
    "ilk_ay": "1982-01",
-   "son_ay": "2026-07",
+   "son_ay": "2026-06",
    "aylik": {
     "1982-01": {
      "endeks": 0.006292,
@@ -4048,11 +4043,6 @@
      "endeks": 5552.52,
      "yillik": 28.09,
      "ort12": 27.26
-    },
-    "2026-07": {
-     "endeks": 5637.14,
-     "yillik": 27.83,
-     "ort12": 27.54
     }
    },
    "yillik_aralik": {
