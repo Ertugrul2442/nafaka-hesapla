@@ -22,6 +22,8 @@ VERI = os.path.join(KOK, "veri", "endeksler.json")
 HESAP = os.path.join(KOK, "hesap.js")
 SITE = os.path.join(KOK, "docs", "index.html")
 SITE_VERI = os.path.join(KOK, "docs", "veri.json")
+KONTROL = os.path.join(KOK, "kontrol.html")
+SITE_KONTROL = os.path.join(KOK, "docs", "kontrol.html")
 ARTIFACT = os.path.join(KOK, "nafaka_artifact.html")
 
 ACIKLAMA = ("Mahkemenin belirlediği nafakayı TÜİK'in TÜFE veya Yİ-ÜFE oranıyla "
@@ -57,7 +59,7 @@ def belge(bas, govde):
 
 
 def main():
-    for yol in (SABLON, VERI, HESAP):
+    for yol in (SABLON, VERI, HESAP, KONTROL):
         if not os.path.exists(yol):
             raise SystemExit(f"HATA: bulunamadı -> {yol}")
 
@@ -88,6 +90,14 @@ def main():
     # acilan kopya da erisebiliyor (25.08.2026'da olculdu).
     io.open(SITE_VERI, "w", encoding="utf-8", newline="\n").write(veri_js)
 
+    # Baglanti kontrolu sayfasi: veri gomulmuyor, oldugu gibi kopyalaniyor.
+    # Bilerek hicbir dis kaynagi yok - olctugu sey zaten "dis kaynaklara
+    # ulasilabiliyor mu" oldugu icin kendisi ona bagimli olmamali.
+    kontrol = io.open(KONTROL, encoding="utf-8").read()
+    if "fonts.googleapis.com/css2" not in kontrol:
+        raise SystemExit("HATA: kontrol.html font testini kaybetmiş")
+    io.open(SITE_KONTROL, "w", encoding="utf-8", newline="\n").write(kontrol)
+
     # Artifact goruntuleyicisi sayfalara dosya indirtmiyor; oradaki kopyada
     # indirme baglantisi olu dugme olurdu, cikariyoruz. (Sayfa betigi bu
     # ogelerin yoklugunu zaten kaldiriyor - $("indir") null kontrollu.)
@@ -99,7 +109,7 @@ def main():
     io.open(ARTIFACT, "w", encoding="utf-8", newline="\n").write(artifact)
 
     for ad, yol in (("docs/index.html", SITE), ("docs/veri.json", SITE_VERI),
-                    ("nafaka_artifact.html", ARTIFACT)):
+                    ("docs/kontrol.html", SITE_KONTROL), ("nafaka_artifact.html", ARTIFACT)):
         b = os.path.getsize(yol)
         print(f"yazıldı -> {ad}  ({b / 1024:.0f} KB)")
         if b > 16 * 1024 * 1024:

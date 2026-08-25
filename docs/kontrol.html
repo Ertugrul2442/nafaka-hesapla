@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nafaka Cetveli — Bağlantı Kontrolü</title>
+<meta name="robots" content="noindex">
+<!-- Bu sayfa BILEREK hicbir dis kaynak kullanmiyor: yazi tipi de dahil her sey
+     sistemden geliyor. Cunku olcmek istedigimiz sey tam olarak "dis kaynaklara
+     ulasilabiliyor mu" sorusu. -->
+<style>
+:root{
+  --kagit:#f4f5f7; --yuzey:#fff; --yuzey-ic:#f8f9fa;
+  --murekkep:#191d24; --ara:#646c7a; --cizgi:#dcdfe5; --cizgi-kalin:#c3c8d1;
+  --aksan:#8c2f39; --iyi:#1a6b45; --iyi-zemin:#eaf5ef; --iyi-cizgi:#bcdfcc;
+  --kotu:#8c2f39; --kotu-zemin:#f6ebec; --kotu-cizgi:#e3c9cc;
+  --bekle:#8a5a00; --bekle-zemin:#fdf5e4; --bekle-cizgi:#e8d5a8;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --kagit:#14171c; --yuzey:#1b1f26; --yuzey-ic:#20242c;
+    --murekkep:#e7e9ed; --ara:#98a1b0; --cizgi:#2c313a; --cizgi-kalin:#3a4049;
+    --aksan:#e2818b; --iyi:#63c495; --iyi-zemin:#15251d; --iyi-cizgi:#2c4636;
+    --kotu:#e2818b; --kotu-zemin:#2a1c1f; --kotu-cizgi:#4a3035;
+    --bekle:#e3b768; --bekle-zemin:#2a2213; --bekle-cizgi:#4d3f22;
+  }
+}
+:root[data-theme="dark"]{
+  --kagit:#14171c; --yuzey:#1b1f26; --yuzey-ic:#20242c;
+  --murekkep:#e7e9ed; --ara:#98a1b0; --cizgi:#2c313a; --cizgi-kalin:#3a4049;
+  --aksan:#e2818b; --iyi:#63c495; --iyi-zemin:#15251d; --iyi-cizgi:#2c4636;
+  --kotu:#e2818b; --kotu-zemin:#2a1c1f; --kotu-cizgi:#4a3035;
+  --bekle:#e3b768; --bekle-zemin:#2a2213; --bekle-cizgi:#4d3f22;
+}
+*{box-sizing:border-box}
+h1,h2,p{margin:0}
+body{
+  margin:0;padding:32px 20px 64px;background:var(--kagit);color:var(--murekkep);
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+  font-size:16px;line-height:1.55;
+}
+.sarmal{max-width:680px;margin:0 auto}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:26px;line-height:1.2;letter-spacing:-.01em}
+.altyazi{color:var(--ara);font-size:15px;margin-top:8px;text-wrap:pretty}
+
+.karne{
+  margin-top:24px;border:1px solid var(--cizgi);border-radius:4px;overflow:hidden;
+  background:var(--yuzey);
+}
+.satir{display:flex;gap:14px;padding:15px 17px;border-bottom:1px solid var(--cizgi);align-items:flex-start}
+.satir:last-child{border-bottom:none}
+.im{
+  flex:0 0 26px;height:26px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:14px;font-weight:700;
+  background:var(--bekle-zemin);color:var(--bekle);border:1px solid var(--bekle-cizgi);
+}
+.satir.olumlu .im{background:var(--iyi-zemin);color:var(--iyi);border-color:var(--iyi-cizgi)}
+.satir.olumsuz .im{background:var(--kotu-zemin);color:var(--kotu);border-color:var(--kotu-cizgi)}
+.metin{flex:1;min-width:0}
+.baslik{font-weight:600;font-size:15px}
+.aciklama{color:var(--ara);font-size:13.5px;margin-top:3px;text-wrap:pretty}
+.ayrinti{
+  font-family:Consolas,"Cascadia Mono",monospace;font-size:11.5px;color:var(--ara);
+  margin-top:5px;word-break:break-all;
+}
+
+.sonuc{
+  margin-top:22px;border-radius:4px;padding:16px 18px;border:1px solid var(--cizgi);
+  background:var(--yuzey-ic);
+}
+.sonuc.iyi{background:var(--iyi-zemin);border-color:var(--iyi-cizgi)}
+.sonuc.kotu{background:var(--kotu-zemin);border-color:var(--kotu-cizgi)}
+.sonuc h2{font-size:16px;font-family:Georgia,serif}
+.sonuc p{margin-top:7px;font-size:14.5px;text-wrap:pretty}
+.sonuc.iyi h2{color:var(--iyi)} .sonuc.kotu h2{color:var(--kotu)}
+
+.dugmeler{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+button{
+  font:inherit;font-size:14px;font-weight:600;padding:9px 16px;border-radius:3px;
+  border:1px solid var(--cizgi-kalin);background:var(--yuzey);color:var(--murekkep);cursor:pointer;
+}
+button:hover{border-color:var(--aksan);color:var(--aksan)}
+button:focus-visible{outline:2px solid var(--aksan);outline-offset:2px}
+.dip{margin-top:26px;padding-top:18px;border-top:1px solid var(--cizgi);
+  font-size:13px;color:var(--ara);line-height:1.65}
+textarea{
+  width:100%;margin-top:12px;min-height:150px;padding:11px;border-radius:3px;
+  border:1px solid var(--cizgi-kalin);background:var(--yuzey-ic);color:var(--murekkep);
+  font-family:Consolas,"Cascadia Mono",monospace;font-size:12px;line-height:1.5;
+}
+</style>
+</head>
+<body>
+<div class="sarmal">
+  <h1>Bağlantı Kontrolü</h1>
+  <p class="altyazi">Bu bilgisayarın Nafaka Cetveli'ni tam olarak kullanıp kullanamayacağını ölçer.
+    Adliye, kurum ya da banka bilgisayarında çalıştır — sonucu ekran görüntüsü alıp gönderebilirsin.</p>
+
+  <div class="karne" id="karne"></div>
+  <div class="sonuc" id="sonuc"><h2>Ölçülüyor…</h2><p>Birkaç saniye sürer.</p></div>
+
+  <div class="dugmeler">
+    <button type="button" id="tekrar">Yeniden ölç</button>
+    <button type="button" id="kopyala">Sonucu kopyala</button>
+  </div>
+  <textarea id="rapor" readonly hidden></textarea>
+
+  <div class="dip">
+    <p>Bu sayfa hiçbir yere veri göndermez; yalnızca senin tarayıcında ölçüm yapar.
+      Ölçtükleri: siteye erişim, veri dosyasına erişim, yazı tiplerine erişim ve
+      tarayıcının ayar saklayıp saklamadığı.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var ADRES = "https://ertugrul2442.github.io/nafaka-hesapla/";
+  var $ = function(id){ return document.getElementById(id); };
+
+  var OLCUMLER = [
+    {
+      ad: "site",
+      baslik: "Siteye erişim",
+      aciklama: "ertugrul2442.github.io açılıyor mu",
+      calis: function(){ return getir(ADRES, "metin"); }
+    },
+    {
+      ad: "veri",
+      baslik: "Güncel veri dosyası",
+      aciklama: "İndirilen dosyanın kendini tazelemesi buna bağlı",
+      calis: function(){ return getir(ADRES + "veri.json", "json"); }
+    },
+    {
+      ad: "font",
+      baslik: "Yazı tipleri (Google Fonts)",
+      aciklama: "Ulaşılamazsa sayfa Windows yazı tipleriyle açılır — hesap yine doğru",
+      calis: fontDene,
+      onemsiz: true
+    },
+    {
+      ad: "depo",
+      baslik: "Ayar saklama",
+      aciklama: "Elle girdiğin oranların kalıcı olması buna bağlı",
+      calis: depoDene
+    }
+  ];
+
+  function getir(url, tur){
+    if (typeof fetch !== "function") {
+      return Promise.resolve({ ok:false, not:"bu tarayıcı fetch desteklemiyor" });
+    }
+    var iptal = typeof AbortController === "function" ? new AbortController() : null;
+    var saat = setTimeout(function(){ if (iptal) iptal.abort(); }, 8000);
+    return fetch(url, { cache:"no-store", signal: iptal ? iptal.signal : undefined })
+      .then(function(y){
+        clearTimeout(saat);
+        if (!y.ok) return { ok:false, not:"sunucu " + y.status + " döndü" };
+        return (tur === "json" ? y.json() : y.text()).then(function(icerik){
+          if (tur === "json") {
+            var ay = icerik && icerik.seriler && icerik.seriler.TUFE && icerik.seriler.TUFE.son_ay;
+            return ay ? { ok:true, not:"son veri: " + ay } : { ok:false, not:"dosya beklenen biçimde değil" };
+          }
+          return { ok:String(icerik).indexOf("Nafaka") !== -1,
+                   not: String(icerik).indexOf("Nafaka") !== -1 ? "sayfa geldi"
+                        : "bir şey geldi ama sayfa değil (ağ filtresi araya girmiş olabilir)" };
+        });
+      })
+      .catch(function(e){
+        clearTimeout(saat);
+        return { ok:false, not: (e && e.name === "AbortError") ? "8 saniyede cevap yok" : "engellendi / ulaşılamıyor" };
+      });
+  }
+
+  function fontDene(){
+    return new Promise(function(coz){
+      var l = document.createElement("link");
+      l.rel = "stylesheet";
+      l.href = "https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400&display=swap";
+      var bitti = false;
+      var saat = setTimeout(function(){
+        if (!bitti) { bitti = true; coz({ ok:false, not:"8 saniyede cevap yok" }); }
+      }, 8000);
+      l.onload  = function(){ if (!bitti) { bitti = true; clearTimeout(saat); coz({ ok:true, not:"yüklendi" }); } };
+      l.onerror = function(){ if (!bitti) { bitti = true; clearTimeout(saat); coz({ ok:false, not:"engellendi" }); } };
+      document.head.appendChild(l);
+    });
+  }
+
+  function depoDene(){
+    var anahtar = "nafaka-kontrol-deneme";
+    try {
+      window.localStorage.setItem(anahtar, "1");
+      var geri = window.localStorage.getItem(anahtar);
+      window.localStorage.removeItem(anahtar);
+      return Promise.resolve(geri === "1"
+        ? { ok:true, not:"çalışıyor — girdiğin oranlar kalıcı olur" }
+        : { ok:false, not:"yazıldı ama geri okunamadı" });
+    } catch (e) {
+      return Promise.resolve({ ok:false,
+        not:"tarayıcı izin vermiyor (" + (e && e.name ? e.name : "hata") + ")" });
+    }
+  }
+
+  function el(etiket, sinif, yazi){
+    var d = document.createElement(etiket);
+    if (sinif) d.className = sinif;
+    if (yazi !== undefined) d.textContent = yazi;
+    return d;
+  }
+
+  /* Satirlari innerHTML ile degil, dugum kurarak yapiyoruz: hem sonradan
+     yeniden sorgulamaya gerek kalmiyor hem de sahte DOM'da olculebiliyor. */
+  var satirRef = {};
+  function satirCiz(o){
+    var kok = el("div", "satir");
+    var im = el("div", "im", "…");
+    var metin = el("div", "metin");
+    metin.appendChild(el("div", "baslik", o.baslik));
+    metin.appendChild(el("div", "aciklama", o.aciklama));
+    var ayrinti = el("div", "ayrinti", "");
+    metin.appendChild(ayrinti);
+    kok.appendChild(im);
+    kok.appendChild(metin);
+    satirRef[o.ad] = { kok: kok, im: im, ayrinti: ayrinti };
+    return kok;
+  }
+
+  function satirGuncelle(ad, r){
+    var s = satirRef[ad];
+    if (!s) return;
+    s.kok.className = "satir " + (r.ok ? "olumlu" : "olumsuz");
+    s.im.textContent = r.ok ? "✓" : "×";
+    s.ayrinti.textContent = r.not;
+  }
+
+  /* Karar mantigi ayri ve saf: hangi olcumden hangi sonucun cikacagi burada. */
+  function karar(s){
+    var site = !!(s.site && s.site.ok);
+    var veri = !!(s.veri && s.veri.ok);
+    var depo = !!(s.depo && s.depo.ok);
+    var baslik, metin, sinif;
+
+    if (site && veri) {
+      baslik = "Her şey yolunda";
+      metin = "Bu bilgisayar siteyi açabiliyor. Doğrudan " + ADRES + " adresini kullan, " +
+              "dosya indirmene gerek yok.";
+      sinif = "sonuc iyi";
+    } else if (!site && veri) {
+      baslik = "Sayfa engelli ama veri geliyor";
+      metin = "Siteye giremiyorsun ama veri dosyasına ulaşılıyor. İndirilmiş dosyayı kullan — " +
+              "kendini güncellemeye devam eder.";
+      sinif = "sonuc";
+    } else {
+      baslik = "Bu bilgisayar siteye ulaşamıyor";
+      metin = "Ağ engelliyor. İndirilmiş dosyayı kullan: hesap eksiksiz çalışır. " +
+              "Yeni ayın oranını “Elle oran ekle” bölümünden girmen gerekir" +
+              (depo ? " ve girdiğin kalıcı olur." : ".");
+      sinif = "sonuc kotu";
+    }
+    if (!depo) {
+      metin += " DİKKAT: bu tarayıcı ayar saklamıyor, elle girdiğin oran sayfayı " +
+               "kapatınca kaybolur — bunu bana bildir, dosyaya gömen bir sürüm yaparız.";
+    }
+    return { baslik: baslik, metin: metin, sinif: sinif };
+  }
+
+  function ortam(){
+    var d = [];
+    d.push("açılış: " + (location.protocol === "file:" ? "bilgisayardaki dosya (file://)" : location.protocol));
+    if (location.protocol !== "file:") d.push("adres: " + location.host);
+    if (navigator.onLine === false) d.push("tarayıcı 'çevrimdışı' diyor");
+    return d.join(" · ");
+  }
+
+  var sonuclar = {};
+
+  function olc(){
+    sonuclar = {};
+    satirRef = {};
+    var karne = $("karne");
+    karne.innerHTML = "";
+    OLCUMLER.forEach(function(o){ karne.appendChild(satirCiz(o)); });
+
+    var ortamSatiri = el("div", "satir");
+    ortamSatiri.appendChild(el("div", "im", "i"));
+    var om = el("div", "metin");
+    om.appendChild(el("div", "baslik", "Bu bilgisayar"));
+    om.appendChild(el("div", "ayrinti", ortam()));
+    ortamSatiri.appendChild(om);
+    karne.appendChild(ortamSatiri);
+
+    var k = $("sonuc");
+    k.className = "sonuc";
+    k.innerHTML = "";
+    var kb = el("h2", "", "Ölçülüyor…"), kp = el("p", "", "Birkaç saniye sürer.");
+    k.appendChild(kb); k.appendChild(kp);
+    $("rapor").hidden = true;
+
+    return Promise.all(OLCUMLER.map(function(o){
+      return o.calis().then(function(r){
+        sonuclar[o.ad] = r;
+        satirGuncelle(o.ad, r);
+        return r;
+      });
+    })).then(function(){ ozetle(kb, kp); });
+  }
+
+  function ozetle(kb, kp){
+    var s = karar(sonuclar);
+    $("sonuc").className = s.sinif;
+    kb.textContent = s.baslik;
+    kp.textContent = s.metin;
+
+    var r = ["Nafaka Cetveli - baglanti kontrolu", new Date().toString(), ortam(), ""];
+    OLCUMLER.forEach(function(o){
+      var d = sonuclar[o.ad];
+      r.push((d.ok ? "[+] " : "[-] ") + o.baslik + " -> " + d.not);
+    });
+    $("rapor").value = r.join("\n");
+    window.__kontrolSonuc = { sonuclar: sonuclar, karar: s, rapor: $("rapor").value };
+  }
+
+  $("tekrar").addEventListener("click", olc);
+  $("kopyala").addEventListener("click", function(){
+    var d = $("kopyala"), eski = d.textContent;
+    $("rapor").hidden = false;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText($("rapor").value).then(function(){
+        d.textContent = "Kopyalandı"; setTimeout(function(){ d.textContent = eski; }, 1600);
+      }, function(){
+        d.textContent = "Aşağıdan elle kopyala"; setTimeout(function(){ d.textContent = eski; }, 2600);
+      });
+    } else {
+      d.textContent = "Aşağıdan elle kopyala"; setTimeout(function(){ d.textContent = eski; }, 2600);
+    }
+  });
+
+  window.__kontrolBasla = olc;   // test bunu bekleyebilsin
+  olc();
+})();
+</script>
+</body>
+</html>

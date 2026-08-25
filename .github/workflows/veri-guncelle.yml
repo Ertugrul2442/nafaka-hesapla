@@ -56,6 +56,7 @@ jobs:
         run: |
           node test_hesap.js
           node test_site.js
+          node test_kontrol.js
           # Canlı tazeleme testi ağa çıkar; erişemezse kendini atlar, düşürmez.
           node test_canli_tazeleme.js
 

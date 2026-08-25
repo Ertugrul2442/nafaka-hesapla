@@ -43,6 +43,14 @@ TÜİK yeni ayı her ayın 3'ünde yayımlıyor. Bu depodaki zamanlanmış iş
 yeniden kuruyor. Veri doğrulamadan geçmezse eski veri yayında kalıyor ve
 hata bildiriliyor — bozuk veri sessizce yayına giremiyor.
 
+## Kurum ağında çalışmıyor mu
+
+`kontrol.html` (yayında: https://ertugrul2442.github.io/nafaka-hesapla/kontrol.html)
+o bilgisayarın neye erişip neye erişemediğini ölçer: siteye erişim, veri
+dosyasına erişim, yazı tipleri ve tarayıcının ayar saklayıp saklamadığı.
+Hiçbir yere veri göndermez. Engelli bir ağda kullanacaksan bu dosyayı da
+yanında taşı — kendisi hiçbir dış kaynağa bağımlı değil.
+
 ## Geliştirme
 
 ```
@@ -51,6 +59,7 @@ py -3.13 site_yap.py    # docs/index.html'i yeniden kur
 py -3.13 test_veri.py   # veri güvenlik kontrollerinin testleri
 node test_hesap.js      # hesap motorunun testleri
 node test_site.js       # yayına giden sayfanın testleri
+node test_kontrol.js    # bağlantı kontrolü sayfasının testleri
 ```
 
 `docs/index.html` üretilen dosyadır, elle düzenlenmez — kaynak `sablon.html`,
