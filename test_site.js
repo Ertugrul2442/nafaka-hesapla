@@ -64,11 +64,10 @@ function sayfayiKur(protokol, sec) {
   // ayarlar; shim bunu kendiliginden yapmadigi icin burada taklit ediyoruz.
   kayit.elleEndeks.value = "TUFE";
 
-  const radyolar = { endeks: [], oranTuru: [], referans: [] };
+  const radyolar = { endeks: [], oranTuru: [] };
   const tumRadyolar = [];
   [["endeks", "TUFE", true], ["endeks", "UFE", false],
-   ["oranTuru", "ort12", true], ["oranTuru", "yillik", false],
-   ["referans", "onceki", true], ["referans", "ayni", false]].forEach(([ad, deger, isaretli]) => {
+   ["oranTuru", "ort12", true], ["oranTuru", "yillik", false]].forEach(([ad, deger, isaretli]) => {
     const o = Ogesi("input"); o.type = "radio"; o.name = ad; o.value = deger; o.checked = isaretli;
     radyolar[ad].push(o); tumRadyolar.push(o);
   });
@@ -186,6 +185,21 @@ kayit.bitYil.value = "2040";
 kayit.form.tetikle("input");
 kontrol("veri bitince uyari basildi", kayit.uyarilar.innerHTML.includes("uyari"),
         kayit.uyarilar.innerHTML.slice(0, 140));
+
+console.log("\n--- artis hep 'onceki ay' orani, secenek yok ---");
+kontrol("referans secenegi arayuzden kaldirildi", !/name="referans"/.test(html));
+kontrol("hesap cagrisi 'onceki' sabitine baglanmis", /referans:"onceki"/.test(html));
+kontrol("cetvel Aralik oranini uyguluyor (Ocak yil donumu)",
+        kayit.govde.innerHTML.includes("Aralık 2025 oranı"),
+        kayit.govde.innerHTML.slice(-300));
+kontrol("dipnot kurali aciklyor", html.includes("Yıl dönümünden bir önceki ayın oranı"));
+
+console.log("\n--- kimse kimsenin verisine karismiyor ---");
+kontrol("sayfa hicbir yere veri gondermiyor",
+        !/method\s*:\s*["']POST/i.test(html) && !/XMLHttpRequest/.test(html) &&
+        !/navigator\.sendBeacon/.test(html) && !/new WebSocket/.test(html));
+kontrol("disa giden tek istek okuma amacli veri.json",
+        (html.match(/fetch\(/g) || []).length === 1, (html.match(/fetch\([^)]{0,40}/g) || []).join(" | "));
 
 console.log("\n--- internetsiz kullanim (engelli agda ise yarayacak kisim) ---");
 kontrol("indirme baglantisi var", /id="indir"[^>]*download=/.test(html));

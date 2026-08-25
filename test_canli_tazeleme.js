@@ -43,11 +43,10 @@ function calistir(html) {
   kayit.tutar.value = "2000"; kayit.basYil.value = "2020";
   kayit.elleEndeks.value = "TUFE";
 
-  const radyolar = { endeks: [], oranTuru: [], referans: [] };
+  const radyolar = { endeks: [], oranTuru: [] };
   const tum = [];
   [["endeks", "TUFE", true], ["endeks", "UFE", false],
-   ["oranTuru", "ort12", true], ["oranTuru", "yillik", false],
-   ["referans", "onceki", true], ["referans", "ayni", false]].forEach(([ad, d, i]) => {
+   ["oranTuru", "ort12", true], ["oranTuru", "yillik", false]].forEach(([ad, d, i]) => {
     const o = Ogesi("input"); o.name = ad; o.value = d; o.checked = i;
     radyolar[ad].push(o); tum.push(o);
   });

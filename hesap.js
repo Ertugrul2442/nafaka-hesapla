@@ -28,7 +28,11 @@
 
   /* Bir yildonumunde uygulanacak oranin hangi aya ait olacagini secer.
      "onceki"  : yildonumunden bir onceki ay  (o ana kadar tamamlanan 12 ay)
-     "ayni"    : yildonumu ayinin kendisi                                   */
+     "ayni"    : yildonumu ayinin kendisi
+
+     VARSAYILAN VE ARAYUZDEKI TEK DAVRANIS "onceki". "ayni" arayuzde
+     gosterilmiyor; motorda duruyor cunku bir gun karar lafzi farkli olursa
+     tek satirla geri acilir ve testleri zaten yazili.                       */
   function referansAy(yil, ay, kural) {
     return kural === "ayni" ? { yil: yil, ay: ay } : ayEkle(yil, ay, -1);
   }
