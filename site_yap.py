@@ -35,7 +35,8 @@ INDIR_BAGLANTISI = ('        <a class="dugme" id="indir" href="index.html" '
                     'download="nafaka-cetveli.html">Bilgisayarına indir</a>\n')
 INDIR_NOTU = ('      <p class="not" id="indirNot">İndirdiğin dosya çift tıklamayla açılır ve '
               'internetsiz de çalışır.\n        İnternete erişebildiği her açılışta veriyi buradan '
-              'kendi tazeler; erişemezse\n        içindeki veriyle devam eder ve eskidiğinde uyarır.</p>\n')
+              'kendi tazeler ve hatırlar;\n        bir daha ağa çıkamasa bile son indirdiği veriyle '
+              'çalışmaya devam eder.</p>\n')
 
 # emoji favicon - ayri dosya gerektirmiyor
 FAVICON = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'"

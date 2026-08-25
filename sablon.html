@@ -425,15 +425,15 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
         <a class="dugme" id="indir" href="index.html" download="nafaka-cetveli.html">Bilgisayarına indir</a>
       </div>
       <p class="not" id="indirNot">İndirdiğin dosya çift tıklamayla açılır ve internetsiz de çalışır.
-        İnternete erişebildiği her açılışta veriyi buradan kendi tazeler; erişemezse
-        içindeki veriyle devam eder ve eskidiğinde uyarır.</p>
+        İnternete erişebildiği her açılışta veriyi buradan kendi tazeler ve hatırlar;
+        bir daha ağa çıkamasa bile son indirdiği veriyle çalışmaya devam eder.</p>
     </main>
   </div>
 
   <footer class="dip">
     <p><strong>Veri kaynağı.</strong> TÜİK Veri Portalı, resmî aylık fiyat endeksi serileri. TÜİK yeni ayı her ayın 3'ünde yayımlıyor; bu sayfa onu kendiliğinden alıp güncelliyor. <span id="kunye" class="kunye"></span></p>
     <p><strong>“On iki aylık ortalama” ne demek.</strong> Son 12 ayın endeks ortalamasının, ondan önceki 12 ayın ortalamasına göre değişimi. Tek bir ayın sıçramasından az etkilendiği için nafaka kararlarında en sık bu ölçü geçer. “Yıllık” ise yalnız o ayın, geçen yılın aynı ayına göre değişimidir.</p>
-    <p><strong>İnternetsiz kullanım ve güncel kalma.</strong> Sayfanın tamamı tek dosya: veri de hesap da içinde. İndirdiğin dosyayı çift tıklayarak açabilir, USB'yle taşıyabilir, e-postayla gönderebilirsin. Dosya her açılışta veriyi bu siteden tazelemeye çalışır — internet varsa kendini günceller, yoksa içindeki veriyle çalışır ve veri eskidiğinde en üstte uyarı çıkarır. Yani bir kez indirdiğin dosyayı tekrar tekrar indirmen gerekmez.</p>
+    <p><strong>İnternetsiz kullanım ve güncel kalma.</strong> Sayfanın tamamı tek dosya: veri de hesap da içinde. İndirdiğin dosyayı çift tıklayarak açabilir, USB'yle taşıyabilir, e-postayla gönderebilirsin. Dosya her açılışta veriyi bu siteden tazelemeye çalışır ve <strong>indirdiğini hatırlar</strong>: bir kez internet gördüğü yerde açıldıysa, sonradan ağa hiç çıkamasa bile o veriyle çalışmaya devam eder. Sağ üstte hangi verinin kullanıldığı yazar. Veri gerçekten eskirse en üstte uyarı çıkar; TÜİK oranı açıkladığı hâlde dosyaya gelmiyorsa “Elle oran ekle” bölümünden girebilirsin.</p>
     <p><strong>Artışta hangi ayın oranı uygulanır.</strong> Yıl dönümünden bir önceki ayın oranı. O ay, tamamlanmış son on iki ayı kapsar: Ocak yıl dönümünde Aralık oranı uygulanır ve tam bir takvim yılına denk gelir. Cetvelde her artışın hangi aya ait olduğu yazıyor.</p>
     <p><strong>Kurum bilgisayarında sorun mu var?</strong> <a href="https://ertugrul2442.github.io/nafaka-hesapla/kontrol.html">Bağlantı kontrolü sayfası</a> o bilgisayarın neye erişip neye erişemediğini ölçer. Engelli bir ağda kullanacaksan bu dosyayı da yanında taşı.</p>
     <p><strong>Bu bir hesap makinesidir, hukuki görüş değildir.</strong> Kararındaki artış maddesinin lafzı — hangi endeks, hangi oran, hangi tarih — sonucu değiştirir. Kararı okuyup seçenekleri ona göre ayarla.</p>
@@ -448,7 +448,14 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
   var H = window.NafakaHesap, VERI = window.ENDEKS_VERISI;
   var ADRES = "https://ertugrul2442.github.io/nafaka-hesapla/";
   var VERI_ADRES = ADRES + "veri.json";
-  var tazelendi = false;
+  /* Veri nereden geldi:
+       "gomulu"  - dosyanın içinde yazan, hiç tazelenmemiş
+       "kayitli" - daha önce ağa çıkıldığında indirilip tarayıcıya kaydedilmiş
+       "taze"    - şu anda siteden çekildi
+     "kayitli" olmadan indirilen dosya her açılışta gömülü veriye dönerdi;
+     ağın engelli olduğu yerde tazeleme hiçbir işe yaramazdı. */
+  var veriKaynagi = "gomulu";
+  var VERI_DEPO = "nafaka-veri-onbellek-v1";
 
   /* --- elle girilen oranlar -------------------------------------------
      VERI  : TUIK'ten gelen resmi veri (gomulu ya da siteden tazelenmis)
@@ -512,6 +519,32 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
     }
   }
 
+  function veriGecerliMi(v){
+    return !!(v && v.seriler && v.seriler.TUFE && v.seriler.TUFE.aylik &&
+              v.seriler.TUFE.son_ay && v.seriler.UFE && v.seriler.UFE.aylik);
+  }
+
+  /* Daha once indirilmis veri varsa ve gomuluden yeniyse onu kullan.
+     Boylece agin olmadigi yerde de son bilinen veriyle calisiliyor. */
+  function onbellektenOku(){
+    try {
+      var ham = window.localStorage.getItem(VERI_DEPO);
+      if (!ham) return;
+      var v = JSON.parse(ham);
+      if (veriGecerliMi(v) && v.seriler.TUFE.son_ay > VERI.seriler.TUFE.son_ay) {
+        VERI = v;
+        veriKaynagi = "kayitli";
+      }
+    } catch (e) {
+      // bozuk ya da ulasilamayan onbellek: gomulu veriyle devam
+    }
+  }
+
+  function onbellegeYaz(v){
+    try { window.localStorage.setItem(VERI_DEPO, JSON.stringify(v)); return true; }
+    catch (e) { return false; }   // yer yok / izin yok - tazeleme yine de bu oturumda gecerli
+  }
+
   function birlestir(){
     var r = H.elleBirlestir(VERI, ELLE);
     AKTIF = r.veri;
@@ -533,6 +566,7 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
   $("basAy").value = "1";
 
   elleOku();
+  onbellektenOku();
   birlestir();
 
   // Bitis tarihi, elimizdeki son aya ayarlaniyor. Veri sonradan tazelenirse
@@ -559,8 +593,10 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
     $("kapsam").innerHTML =
       "<b>TÜFE</b>" + H.ayEtiket(ti.yil,ti.ay) + " – " + H.ayEtiket(ts.yil,ts.ay) +
       "<b style='margin-top:6px'>Yİ-ÜFE</b>" + H.ayEtiket(ui.yil,ui.ay) + " – " + H.ayEtiket(us.yil,us.ay) +
-      '<span class="tazelik' + (tazelendi ? ' tazelendi' : '') + '">' +
-      (tazelendi ? "siteden tazelendi" : "dosyaya gömülü veri") + "</span>";
+      '<span class="tazelik' + (veriKaynagi === "gomulu" ? '' : ' tazelendi') + '">' +
+      ({ gomulu: "dosyaya gömülü veri",
+         kayitli: "daha önce indirilmiş veri",
+         taze: "siteden tazelendi" })[veriKaynagi] + "</span>";
     $("kunye").textContent = "Veri " + VERI.cekilme_tarihi.slice(0,10) + " tarihinde çekildi.";
   }
 
@@ -591,7 +627,8 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
         if (!taze || !taze.seriler || !taze.seriler.TUFE || !taze.seriler.TUFE.aylik) return;
         if (!(taze.seriler.TUFE.son_ay > VERI.seriler.TUFE.son_ay)) return;  // daha yeni degil
         VERI = taze;
-        tazelendi = true;
+        veriKaynagi = "taze";
+        onbellegeYaz(taze);   // agin olmadigi yerde de bu veri kullanilsin
         birlestir();       // elle girilenler tazelemeden sonra da duruyor
         elleListeyiCiz();
         bitisiIlerlet();   // yeni ay cekildiyse cetvele de girsin

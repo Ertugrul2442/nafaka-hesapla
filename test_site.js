@@ -446,6 +446,62 @@ kontrol("aksan-uzeri her uc temada tanimli", uc === 3, "bulunan " + uc);
   kontrol("silince depodan da kalkti", !JSON.stringify(depo.kutu).includes("31.25"),
           JSON.stringify(depo.kutu).slice(0, 160));
 
+  console.log("\n--- ASIL SENARYO: evde tazelen, adliyede agsiz ac ---");
+  {
+    const tarayici = DepoYap({}, true);       // ayni kisinin ayni tarayicisi
+    const yeniAyKod = "2026-08";
+    const siteVerisi = JSON.parse(JSON.stringify(V));
+    ["TUFE", "UFE"].forEach(k => {
+      siteVerisi.seriler[k].aylik[yeniAyKod] = { endeks: 141, yillik: 30, ort12: 31 };
+      siteVerisi.seriler[k].son_ay = yeniAyKod;
+    });
+
+    // 1. adim - evde, internet var
+    const evde = sayfayiKur("file:", { depo: tarayici, tazeVeri: siteVerisi });
+    await bekle();
+    kontrol("evde siteden tazelendi",
+            evde.kayit.kapsam.innerHTML.includes("siteden tazelendi"),
+            evde.kayit.kapsam.innerHTML.slice(-110));
+    kontrol("indirilen veri tarayiciya kaydedildi",
+            JSON.stringify(tarayici.kutu).includes("nafaka-veri-onbellek"),
+            Object.keys(tarayici.kutu).join(", "));
+
+    // 2. adim - adliyede, ag engelli (fetch reddediliyor)
+    const adliyede = sayfayiKur("file:", { depo: tarayici });
+    await bekle();
+    kontrol("agsizken gomulu veriye DONMEDI",
+            !adliyede.kayit.kapsam.innerHTML.includes("dosyaya gömülü veri"),
+            adliyede.kayit.kapsam.innerHTML.slice(-110));
+    kontrol("daha once indirilmis veriyi kullaniyor",
+            adliyede.kayit.kapsam.innerHTML.includes("daha önce indirilmiş veri"),
+            adliyede.kayit.kapsam.innerHTML.slice(-110));
+    kontrol("kapsam yeni ayi gosteriyor",
+            adliyede.kayit.kapsam.innerHTML.includes("Ağustos 2026"),
+            adliyede.kayit.kapsam.innerHTML.slice(-150));
+    kontrol("agsizken yeni ay eskilik uyarisi cikarmiyor",
+            adliyede.kayit.veriUyari.innerHTML === "",
+            adliyede.kayit.veriUyari.innerHTML.slice(0, 120));
+
+    // 3. adim - onbellekteki veri gomuluden ESKIyse yok sayilmali
+    const eskiOnbellek = DepoYap({ "nafaka-veri-onbellek-v1":
+      JSON.stringify({ seriler: { TUFE: { son_ay: "2020-01", aylik: {} },
+                                  UFE: { son_ay: "2020-01", aylik: {} } } }) }, true);
+    const eski = sayfayiKur("file:", { depo: eskiOnbellek });
+    await bekle();
+    kontrol("eski onbellek yok sayildi, gomulu veri kullanildi",
+            eski.kayit.kapsam.innerHTML.includes("dosyaya gömülü veri"),
+            eski.kayit.kapsam.innerHTML.slice(-110));
+
+    // 4. adim - bozuk onbellek sayfayi kirmamali
+    const bozukOnbellek = DepoYap({ "nafaka-veri-onbellek-v1": "{yarim" }, true);
+    const bozuk2 = sayfayiKur("file:", { depo: bozukOnbellek });
+    await bekle();
+    kontrol("bozuk onbellek sayfayi kirmadi",
+            (bozuk2.kayit.govde.innerHTML.match(/<tr/g) || []).length >= 6);
+    kontrol("bozuk onbellekte gomulu veriye dusuldu",
+            bozuk2.kayit.kapsam.innerHTML.includes("dosyaya gömülü veri"));
+  }
+
   console.log("\n--- depodaki kayit bozuksa ---");
   // Bozuk JSON, deponun calismadigi anlamina GELMEZ: kaydi at, calismaya devam et.
   const cop = sayfayiKur("https:", { depo: DepoYap({ "nafaka-elle-oranlar-v1": "{bozuk" }, true) });
