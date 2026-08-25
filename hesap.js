@@ -60,7 +60,7 @@
     var tutar = +s.baslangicTutar;
     var donemBas = bas;
     var donemNo = 0;
-    var sonOran = null, sonOranAy = null, sonOranAyEtiket = null;
+    var sonOran = null, sonOranAy = null, sonOranAyEtiket = null, sonOranElle = false;
 
     while (true) {
       var sonrakiYildonumu = ayEkle(donemBas.yil, donemBas.ay, 12);
@@ -80,6 +80,7 @@
         oran: sonOran,
         oranAyKodu: sonOranAy,
         oranAyEtiket: sonOranAyEtiket,
+        elle: sonOranElle,
         aylikTutar: tutar,
         ayAdedi: ayAdedi,
         donemToplami: tutar * ayAdedi
@@ -97,8 +98,9 @@
       if (oran === undefined || oran === null) {
         uyarilar.push(
           ayEtiket(sonrakiYildonumu.yil, sonrakiYildonumu.ay) + " artışı yapılamadı: " +
-          ayEtiket(ref.yil, ref.ay) + " için " + s.endeks + " verisi henüz yayımlanmamış. " +
-          "Hesap " + ayEtiket(donemSon.yil, donemSon.ay) + " itibarıyla durduruldu."
+          ayEtiket(ref.yil, ref.ay) + " için " + s.endeks + " oranı elimizde yok. " +
+          "Hesap " + ayEtiket(donemSon.yil, donemSon.ay) + " itibarıyla durduruldu. " +
+          "TÜİK açıkladığı hâlde buraya gelmediyse “Elle oran ekle” bölümünden girebilirsin."
         );
         break;
       }
@@ -107,6 +109,7 @@
       sonOran = oran;
       sonOranAy = refKod;
       sonOranAyEtiket = ayEtiket(ref.yil, ref.ay);
+      sonOranElle = !!kayit._elle;
       donemBas = sonrakiYildonumu;
     }
 
@@ -114,6 +117,57 @@
     var toplamAy = satirlar.reduce(function (t, r) { return t + r.ayAdedi; }, 0);
 
     return { satirlar: satirlar, uyarilar: uyarilar, toplam: toplam, toplamAy: toplamAy };
+  }
+
+  /* Elle girilen oranlari resmi verinin uzerine bindirir.
+
+     Kural: RESMI VERI KAZANIR. Bir ay icin TUIK verisi varsa elle girilen oran
+     hesapta kullanilmaz - ama silinmez, "gecersiz" listesinde geri doner ve
+     ekranda gorunmeye devam eder. Boylece kullanicinin girdigi hicbir sey
+     kendiliginden kaybolmaz, ama eski bir tahmin resmi rakamin onune de gecemez.
+
+     elle = { TUFE: { "2026-08": {ort12: 31.2, yillik: 30.1} }, UFE: {...} }   */
+  function elleBirlestir(veri, elle) {
+    var kullanilan = [], gecersiz = [];
+    if (!veri || !veri.seriler || !elle) {
+      return { veri: veri, kullanilan: kullanilan, gecersiz: gecersiz };
+    }
+
+    var yeni = {}, k;
+    for (k in veri) yeni[k] = veri[k];
+    yeni.seriler = {};
+
+    for (var kod in veri.seriler) {
+      var s = veri.seriler[kod];
+      var girdiler = elle[kod] || {};
+      var aylar = Object.keys(girdiler);
+      if (!aylar.length) { yeni.seriler[kod] = s; continue; }
+
+      var aylik = {};
+      for (var a in s.aylik) aylik[a] = s.aylik[a];
+
+      aylar.forEach(function (ay) {
+        var g = girdiler[ay];
+        var mevcut = aylik[ay];
+        var resmiVarMi = mevcut &&
+          (mevcut.ort12 !== undefined && mevcut.ort12 !== null ||
+           mevcut.yillik !== undefined && mevcut.yillik !== null);
+        if (resmiVarMi) {
+          gecersiz.push({ endeks: kod, ay: ay, resmi: mevcut, girilen: g });
+          return;
+        }
+        aylik[ay] = { ort12: g.ort12, yillik: g.yillik, _elle: true };
+        kullanilan.push({ endeks: kod, ay: ay });
+      });
+
+      var sirali = Object.keys(aylik).sort();
+      yeni.seriler[kod] = {
+        ad: s.ad, veri_seti: s.veri_seti,
+        ilk_ay: sirali[0], son_ay: sirali[sirali.length - 1],
+        aylik: aylik, yillik_aralik: s.yillik_aralik
+      };
+    }
+    return { veri: yeni, kullanilan: kullanilan, gecersiz: gecersiz };
   }
 
   /* Elimizdeki veri kac ay geride?  TUIK, M ayinin verisini M+1'in 3'unde
@@ -128,7 +182,8 @@
   var disa = {
     hesapla: hesapla,
     ayKodu: ayKodu, ayCoz: ayCoz, ayEkle: ayEkle,
-    ayFarki: ayFarki, ayEtiket: ayEtiket, veriGerideMi: veriGerideMi, AY_ADI: AY_ADI
+    ayFarki: ayFarki, ayEtiket: ayEtiket, veriGerideMi: veriGerideMi,
+    elleBirlestir: elleBirlestir, AY_ADI: AY_ADI
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = disa;

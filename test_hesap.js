@@ -32,6 +32,62 @@ esit("temmuz verisi, 15 aralik -> 5 ay geride", gm("2026-07", 2026, 12, 15).geri
 esit("aralik verisi, ocak -> yil sinirinda dogru", gm("2025-12", 2026, 1, 20).geride, 1);
 esit("aralik verisi, subat -> yil sinirinda ESKIMIS", gm("2025-12", 2026, 2, 20).eskimis, true);
 
+console.log("\n--- elleBirlestir: elle girilen oran resmi veriyle nasil bulusuyor ---");
+{
+  const kucuk = {
+    cekilme_tarihi: "2026-08-25T00:00:00+00:00",
+    seriler: {
+      TUFE: { ad: "TÜFE", ilk_ay: "2026-06", son_ay: "2026-07",
+              aylik: { "2026-06": { ort12: 32.03, yillik: 32.11 },
+                       "2026-07": { ort12: 31.9, yillik: 31.75 } }, yillik_aralik: {} },
+      UFE:  { ad: "Yİ-ÜFE", ilk_ay: "2026-07", son_ay: "2026-07",
+              aylik: { "2026-07": { ort12: 27.54, yillik: 27.83 } }, yillik_aralik: {} }
+    }
+  };
+
+  const bos = H.elleBirlestir(kucuk, { TUFE: {}, UFE: {} });
+  esit("elle girilen yoksa veri aynen kaliyor", bos.veri.seriler.TUFE.son_ay, "2026-07");
+  esit("elle girilen yoksa kullanilan bos", bos.kullanilan.length, 0);
+
+  const r = H.elleBirlestir(kucuk, { TUFE: { "2026-08": { ort12: 31.25 } }, UFE: {} });
+  esit("eksik ay eklendi", r.veri.seriler.TUFE.aylik["2026-08"].ort12, 31.25);
+  esit("elle isareti kondu", r.veri.seriler.TUFE.aylik["2026-08"]._elle, true);
+  esit("son_ay ilerledi", r.veri.seriler.TUFE.son_ay, "2026-08");
+  esit("kullanilan listesinde", r.kullanilan.length, 1);
+  esit("gecersiz yok", r.gecersiz.length, 0);
+  esit("resmi aylar bozulmadi", r.veri.seriler.TUFE.aylik["2026-07"].ort12, 31.9);
+  esit("kaynak veri degistirilmedi", kucuk.seriler.TUFE.aylik["2026-08"], undefined);
+  esit("dokunulmayan seri aynen gecti", r.veri.seriler.UFE.son_ay, "2026-07");
+
+  // RESMI VERI KAZANIR, ama elle girilen SILINMEZ
+  const c = H.elleBirlestir(kucuk, { TUFE: { "2026-07": { ort12: 99 } }, UFE: {} });
+  esit("resmi veri olan ay ezilmedi", c.veri.seriler.TUFE.aylik["2026-07"].ort12, 31.9);
+  esit("elle girilen gecersiz listesinde duruyor", c.gecersiz.length, 1);
+  esit("gecersizde girilen deger de duruyor", c.gecersiz[0].girilen.ort12, 99);
+  esit("gecersizde resmi deger de var", c.gecersiz[0].resmi.ort12, 31.9);
+
+  // hesap, elle girilen orani kullandigini satirda soylemeli
+  // Eylul 2025 baslangic -> ilk yil donumu Eylul 2026 -> referans Agustos 2026,
+  // yani elle girdigimiz ay.
+  const h = H.hesapla(r.veri, {
+    endeks: "TUFE", oranTuru: "ort12", referans: "onceki",
+    baslangicYil: 2025, baslangicAy: 9, baslangicTutar: 1000,
+    bitisYil: 2026, bitisAy: 9
+  });
+  esit("elle oran uygulandi", h.satirlar[1].oran, 31.25);
+  esit("satir 'elle' isaretli", h.satirlar[1].elle, true);
+  esit("baslangic satiri elle degil", h.satirlar[0].elle, false);
+  esit("elle oranla tutar dogru", h.satirlar[1].aylikTutar, 1312.5, 1e-9);
+
+  const h2 = H.hesapla(kucuk, {
+    endeks: "TUFE", oranTuru: "ort12", referans: "onceki",
+    baslangicYil: 2025, baslangicAy: 9, baslangicTutar: 1000,
+    bitisYil: 2026, bitisAy: 9
+  });
+  esit("elle girilmemisken uyari cikiyor", h2.uyarilar.length, 1);
+  esit("uyari elle girmeyi oneriyor", /Elle oran ekle/.test(h2.uyarilar[0]), true);
+}
+
 console.log("\n--- elle dogrulanmis senaryo: Ocak 2022 baslangic, 1000 TL, TUFE 12 aylik ort ---");
 // Referans "onceki" oldugu icin Ocak yildonumlerinde bir onceki Aralik ayinin orani kullanilir.
 const ar = k => veri.seriler.TUFE.aylik[k].ort12;

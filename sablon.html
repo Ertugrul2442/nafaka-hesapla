@@ -195,6 +195,42 @@ th:first-child,td:first-child{text-align:left}
 tbody tr.sonDonem td{background:var(--aksan-yumusak)}
 tbody tr.sonDonem .tutar{color:var(--aksan)}
 
+/* ---------- elle oran ekleme ---------- */
+.elleKutu{margin-top:18px;padding-top:16px;border-top:1px solid var(--cizgi)}
+.elleKutu summary{
+  cursor:pointer;font-size:12.5px;font-weight:600;color:var(--murekkep);
+  list-style:none;display:flex;align-items:center;gap:7px;
+}
+.elleKutu summary::-webkit-details-marker{display:none}
+.elleKutu summary::before{content:"+";font-family:var(--yazi-sayi);color:var(--ara);font-weight:400}
+.elleKutu[open] summary::before{content:"−"}
+.elleKutu summary:focus-visible{outline:2px solid var(--aksan);outline-offset:3px;border-radius:2px}
+.elleKutu .govdesi{margin-top:14px;display:flex;flex-direction:column;gap:12px}
+.ucluAlan{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.elleKutu button{width:100%}
+.elleHata{
+  font-size:12.5px;color:var(--uyari);background:var(--uyari-zemin);
+  border:1px solid var(--uyari-cizgi);border-radius:3px;padding:8px 10px;
+}
+.elleListe{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.elleListe li{
+  display:flex;align-items:flex-start;gap:9px;justify-content:space-between;
+  font-size:12.5px;line-height:1.45;background:var(--yuzey-ic);
+  border:1px solid var(--cizgi);border-radius:3px;padding:8px 10px;
+}
+.elleListe li.gecersiz{opacity:.72}
+.elleListe .kim{font-weight:600}
+.elleListe .oranlar{font-family:var(--yazi-sayi);color:var(--aksan);display:block;margin-top:2px}
+.elleListe li.gecersiz .oranlar{color:var(--ara);text-decoration:line-through}
+.elleListe .durum{display:block;color:var(--ara);margin-top:3px;font-size:11.5px}
+.sil{
+  flex:0 0 auto;border:none;background:none;padding:2px 4px;width:auto;
+  color:var(--ara);font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline;
+}
+.sil:hover{color:var(--aksan)}
+.rozet.elleRozet{border-style:dashed}
+.elleIsaret{display:block;font-size:11px;color:var(--ara);margin-top:3px;font-family:var(--yazi-govde)}
+
 /* ---------- veri tazeligi ---------- */
 #veriUyari:not(:empty){margin-top:20px}
 .eski{
@@ -319,6 +355,50 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
         </div>
         <p class="not">Ocak yıl dönümünde “önceki ay” Aralık oranını uygular; Aralık oranı tam bir takvim yılını kapsadığı için kararların çoğu buna denk düşer.</p>
       </div>
+
+      <details class="elleKutu" id="elleKutu">
+        <summary>Elle oran ekle</summary>
+        <div class="govdesi">
+          <p class="not">TÜİK oranı açıkladı ama buraya gelmediyse kendin girebilirsin.
+            Girdiğin oran bu tarayıcıda kalır, sen silmedikçe kaybolmaz.</p>
+
+          <div class="ucluAlan">
+            <div>
+              <label for="elleEndeks">Endeks</label>
+              <select id="elleEndeks">
+                <option value="TUFE">TÜFE</option>
+                <option value="UFE">Yİ-ÜFE</option>
+              </select>
+            </div>
+            <div>
+              <label for="elleYil">Yıl</label>
+              <input id="elleYil" type="number" step="1">
+            </div>
+          </div>
+
+          <div>
+            <label for="elleAy">Hangi ayın oranı</label>
+            <select id="elleAy"></select>
+          </div>
+
+          <div class="ucluAlan">
+            <div>
+              <label for="elleOrt12">12 aylık ort. (%)</label>
+              <input id="elleOrt12" type="number" step="0.01" inputmode="decimal" placeholder="31,90">
+            </div>
+            <div>
+              <label for="elleYillik">Yıllık (%)</label>
+              <input id="elleYillik" type="number" step="0.01" inputmode="decimal" placeholder="31,75">
+            </div>
+          </div>
+
+          <div id="elleHata"></div>
+          <button type="button" id="elleEkle">Oranı kaydet</button>
+
+          <ul class="elleListe" id="elleListe"></ul>
+          <p class="not" id="elleDurum"></p>
+        </div>
+      </details>
     </form>
 
     <main>
@@ -375,6 +455,46 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
   var ADRES = "https://ertugrul2442.github.io/nafaka-hesapla/";
   var VERI_ADRES = ADRES + "veri.json";
   var tazelendi = false;
+
+  /* --- elle girilen oranlar -------------------------------------------
+     VERI  : TUIK'ten gelen resmi veri (gomulu ya da siteden tazelenmis)
+     ELLE  : kullanicinin girdigi oranlar, tarayicida saklaniyor
+     AKTIF : ikisinin birlesimi - hesap hep bunu kullanir              */
+  var DEPO = "nafaka-elle-oranlar-v1";
+  var ELLE = { TUFE: {}, UFE: {} };
+  var AKTIF = VERI, birlesim = { kullanilan: [], gecersiz: [] };
+  var depoCalisiyor = true;
+
+  function elleOku(){
+    try {
+      var ham = window.localStorage.getItem(DEPO);
+      if (!ham) return;
+      var o = JSON.parse(ham);
+      if (o && typeof o === "object") {
+        ELLE = { TUFE: o.TUFE || {}, UFE: o.UFE || {} };
+      }
+    } catch (e) {
+      // Gizli sekme, dosya olarak acilmis sayfa, site verisi kapali tarayici...
+      depoCalisiyor = false;
+    }
+  }
+
+  function elleYaz(){
+    try {
+      window.localStorage.setItem(DEPO, JSON.stringify(ELLE));
+      depoCalisiyor = true;
+      return true;
+    } catch (e) {
+      depoCalisiyor = false;
+      return false;
+    }
+  }
+
+  function birlestir(){
+    var r = H.elleBirlestir(VERI, ELLE);
+    AKTIF = r.veri;
+    birlesim = r;
+  }
   var $ = function(id){ return document.getElementById(id); };
   var bicimPara = new Intl.NumberFormat("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2});
   var bicimOran = new Intl.NumberFormat("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -390,14 +510,17 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
   });
   $("basAy").value = "1";
 
+  elleOku();
+  birlestir();
+
   // Bitis tarihi, elimizdeki son aya ayarlaniyor. Veri sonradan tazelenirse
   // kullanici bu alana dokunmadiysa yeni aya kaydirilir (bkz. veriyiTazele).
-  var varsayilanBitis = H.ayCoz(VERI.seriler.TUFE.son_ay);
+  var varsayilanBitis = H.ayCoz(AKTIF.seriler.TUFE.son_ay);
   $("bitYil").value = varsayilanBitis.yil;
   $("bitAy").value = String(varsayilanBitis.ay);
 
   function bitisiIlerlet(){
-    var yeni = H.ayCoz(VERI.seriler.TUFE.son_ay);
+    var yeni = H.ayCoz(AKTIF.seriler.TUFE.son_ay);
     var dokunulmamis = +$("bitYil").value === varsayilanBitis.yil &&
                        +$("bitAy").value === varsayilanBitis.ay;
     if (dokunulmamis) {
@@ -408,7 +531,7 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
   }
 
   function kunyeYaz(){
-    var t = VERI.seriler.TUFE, u = VERI.seriler.UFE;
+    var t = AKTIF.seriler.TUFE, u = AKTIF.seriler.UFE;
     var ti = H.ayCoz(t.ilk_ay), ts = H.ayCoz(t.son_ay);
     var ui = H.ayCoz(u.ilk_ay), us = H.ayCoz(u.son_ay);
     $("kapsam").innerHTML =
@@ -421,9 +544,9 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
 
   /* Veri eskimisse yuksek sesle soyle - sessizce eski rakamla hesap yaptirma. */
   function eskilikUyarisi(){
-    var d = H.veriGerideMi(VERI.seriler.TUFE.son_ay, new Date());
+    var d = H.veriGerideMi(AKTIF.seriler.TUFE.son_ay, new Date());
     if (!d.eskimis) { $("veriUyari").innerHTML = ""; return; }
-    var s = H.ayCoz(VERI.seriler.TUFE.son_ay);
+    var s = H.ayCoz(AKTIF.seriler.TUFE.son_ay);
     $("veriUyari").innerHTML =
       '<div class="eski"><b>Bu dosyadaki veri eskimiş.</b><span>' +
       'İçinde en son ' + H.ayEtiket(s.yil, s.ay) + ' verisi var; TÜİK o tarihten sonra ' +
@@ -447,6 +570,8 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
         if (!(taze.seriler.TUFE.son_ay > VERI.seriler.TUFE.son_ay)) return;  // daha yeni degil
         VERI = taze;
         tazelendi = true;
+        birlestir();       // elle girilenler tazelemeden sonra da duruyor
+        elleListeyiCiz();
         bitisiIlerlet();   // yeni ay cekildiyse cetvele de girsin
         kunyeYaz();
         eskilikUyarisi();
@@ -461,14 +586,14 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
       ? "Nafaka kararlarında en sık geçen ölçü budur."
       : "Kararında “yıllık TÜFE/ÜFE oranında” yazıyorsa bunu seç.";
 
-    var s = H.hesapla(VERI, {
+    var s = H.hesapla(AKTIF, {
       endeks:endeks, oranTuru:oranTuru, referans:sec("referans"),
       baslangicYil:+$("basYil").value, baslangicAy:+$("basAy").value,
       baslangicTutar:+$("tutar").value,
       bitisYil:+$("bitYil").value, bitisAy:+$("bitAy").value
     });
 
-    var seriAdi = VERI.seriler[endeks].ad;
+    var seriAdi = AKTIF.seriler[endeks].ad;
     $("cetvelBaslik").textContent = "Dönem cetveli";
     $("cetvelAlt").textContent = seriAdi + " · " +
       (oranTuru === "ort12" ? "on iki aylık ortalamalara göre değişim" : "yıllık değişim");
@@ -498,8 +623,9 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
       var sonMu = i === s.satirlar.length-1;
       var oranHucre = r.oran === null
         ? '<span class="rozet yok">başlangıç</span>'
-        : '<span class="rozet">%'+bicimOran.format(r.oran)+'</span>'+
-          '<span class="refay">'+kacis(r.oranAyEtiket)+' oranı</span>';
+        : '<span class="rozet'+(r.elle ? ' elleRozet' : '')+'">%'+bicimOran.format(r.oran)+'</span>'+
+          '<span class="refay">'+kacis(r.oranAyEtiket)+' oranı</span>'+
+          (r.elle ? '<span class="elleIsaret">elle girildi</span>' : '');
       return '<tr'+(sonMu?' class="sonDonem"':'')+'>'+
         '<td class="donem">'+kacis(r.basEtiket)+' – '+kacis(r.sonEtiket)+'</td>'+
         '<td>'+oranHucre+'</td>'+
@@ -512,17 +638,145 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
     window._son = s;
   }
 
+  /* --- elle oran ekleme arayuzu --------------------------------------- */
+  H.AY_ADI.forEach(function(ad, i){
+    var o = document.createElement("option");
+    o.value = String(i + 1); o.textContent = ad; $("elleAy").appendChild(o);
+  });
+
+  function elleFormuHazirla(){
+    var s = H.ayCoz(AKTIF.seriler.TUFE.son_ay);
+    var sonraki = H.ayEkle(s.yil, s.ay, 1);      // en muhtemel ihtiyac: eksik olan ilk ay
+    $("elleYil").value = sonraki.yil;
+    $("elleAy").value = String(sonraki.ay);
+  }
+
+  function hataGoster(mesaj){
+    $("elleHata").innerHTML = mesaj ? '<div class="elleHata">' + kacis(mesaj) + "</div>" : "";
+  }
+
+  function elleEkle(){
+    var endeks = $("elleEndeks").value;
+    // Beklenmedik bir deger depoya yazilirsa sessizce ise yaramaz bir kayit olur.
+    if (endeks !== "TUFE" && endeks !== "UFE") return hataGoster("Endeks seçilmedi.");
+    var yil = parseInt($("elleYil").value, 10);
+    var ay = parseInt($("elleAy").value, 10);
+    var ort12 = $("elleOrt12").value.trim();
+    var yillik = $("elleYillik").value.trim();
+
+    if (!(yil >= 1980 && yil <= 2100)) return hataGoster("Yıl 1980 ile 2100 arasında olmalı.");
+    if (!(ay >= 1 && ay <= 12)) return hataGoster("Ay seçilmemiş.");
+    if (ort12 === "" && yillik === "") {
+      return hataGoster("En az bir oran gir — 12 aylık ortalama ya da yıllık.");
+    }
+    var kayit = {};
+    for (var i = 0; i < 2; i++) {
+      var alanAdi = i === 0 ? "ort12" : "yillik";
+      var ham = i === 0 ? ort12 : yillik;
+      if (ham === "") continue;
+      var sayi = Number(ham.replace(",", "."));
+      if (!isFinite(sayi)) return hataGoster("Oran sayı olmalı: “" + ham + "”");
+      if (sayi < -90 || sayi > 1000) return hataGoster("Oran %-90 ile %1000 arasında olmalı.");
+      kayit[alanAdi] = sayi;
+    }
+
+    var ayKodu = H.ayKodu(yil, ay);
+    var resmi = VERI.seriler[endeks] && VERI.seriler[endeks].aylik[ayKodu];
+    if (resmi && (resmi.ort12 !== undefined && resmi.ort12 !== null)) {
+      return hataGoster(H.ayEtiket(yil, ay) + " için TÜİK verisi zaten var (%" +
+                        bicimOran.format(resmi.ort12) + "). Elle girmeye gerek yok.");
+    }
+
+    ELLE[endeks] = ELLE[endeks] || {};
+    ELLE[endeks][ayKodu] = kayit;
+    var yazildi = elleYaz();
+    hataGoster("");
+    $("elleOrt12").value = ""; $("elleYillik").value = "";
+
+    birlestir();
+    elleListeyiCiz();
+    bitisiIlerlet();
+    kunyeYaz();
+    eskilikUyarisi();
+    tazele();
+    elleFormuHazirla();
+    if (!yazildi) {
+      hataGoster("Oran hesaba katıldı ama bu tarayıcıya kaydedilemedi — " +
+                 "sayfayı kapatınca kaybolur. Gizli sekmede olabilirsin.");
+    }
+  }
+
+  function elleSil(endeks, ayKodu){
+    if (!ELLE[endeks]) return;
+    delete ELLE[endeks][ayKodu];
+    elleYaz();
+    birlestir();
+    elleListeyiCiz();
+    kunyeYaz();
+    eskilikUyarisi();
+    tazele();
+  }
+
+  function elleListeyiCiz(){
+    var gecersizKume = {};
+    birlesim.gecersiz.forEach(function(g){ gecersizKume[g.endeks + "|" + g.ay] = g.resmi; });
+
+    var satirlar = [];
+    ["TUFE", "UFE"].forEach(function(endeks){
+      Object.keys(ELLE[endeks] || {}).sort().forEach(function(ayKodu){
+        satirlar.push({ endeks: endeks, ay: ayKodu, kayit: ELLE[endeks][ayKodu],
+                        resmi: gecersizKume[endeks + "|" + ayKodu] });
+      });
+    });
+
+    if (!satirlar.length) {
+      $("elleListe").innerHTML = "";
+      $("elleDurum").textContent = depoCalisiyor ? "" :
+        "Bu tarayıcı site verisi saklamıyor; gireceğin oran sayfayı kapatınca kaybolur.";
+      return;
+    }
+
+    $("elleListe").innerHTML = satirlar.map(function(r){
+      var a = H.ayCoz(r.ay);
+      var oranlar = [];
+      if (r.kayit.ort12 !== undefined) oranlar.push("12 ay ort. %" + bicimOran.format(r.kayit.ort12));
+      if (r.kayit.yillik !== undefined) oranlar.push("yıllık %" + bicimOran.format(r.kayit.yillik));
+      var durum = r.resmi
+        ? "TÜİK verisi geldi (%" + bicimOran.format(r.resmi.ort12) +
+          "), artık o kullanılıyor. Girdiğin duruyor, istersen sil."
+        : "hesapta kullanılıyor";
+      return '<li' + (r.resmi ? ' class="gecersiz"' : '') + '>' +
+        '<div><span class="kim">' + (r.endeks === "TUFE" ? "TÜFE" : "Yİ-ÜFE") + " · " +
+        kacis(H.ayEtiket(a.yil, a.ay)) + '</span>' +
+        '<span class="oranlar">' + kacis(oranlar.join(" · ")) + '</span>' +
+        '<span class="durum">' + kacis(durum) + '</span></div>' +
+        '<button type="button" class="sil" data-endeks="' + r.endeks +
+        '" data-ay="' + r.ay + '">sil</button></li>';
+    }).join("");
+
+    $("elleDurum").textContent = depoCalisiyor
+      ? "Girdiklerin bu tarayıcıda saklanıyor; sen silmedikçe kalır."
+      : "Bu tarayıcı site verisi saklamıyor; girdiklerin sayfayı kapatınca kaybolur.";
+  }
+
+  $("elleEkle").addEventListener("click", elleEkle);
+  $("elleListe").addEventListener("click", function(e){
+    var d = e.target;
+    if (d && d.className === "sil") elleSil(d.getAttribute("data-endeks"), d.getAttribute("data-ay"));
+  });
+
   $("kopyala").addEventListener("click", function(){
     var s = window._son; if (!s) return;
     var endeks = sec("endeks");
     var satirlar = [
-      VERI.seriler[endeks].ad + " — " +
+      AKTIF.seriler[endeks].ad + " — " +
       (sec("oranTuru")==="ort12" ? "on iki aylık ortalamalara göre değişim" : "yıllık değişim"), ""
     ];
     s.satirlar.forEach(function(r){
       satirlar.push(
         r.basEtiket + " – " + r.sonEtiket + "\t" +
-        (r.oran===null ? "başlangıç" : "%"+bicimOran.format(r.oran)+" ("+r.oranAyEtiket+")") + "\t" +
+        (r.oran===null ? "başlangıç"
+          : "%"+bicimOran.format(r.oran)+" ("+r.oranAyEtiket+(r.elle ? ", elle girildi" : "")+")") + "\t" +
         para(r.aylikTutar) + "\t" + r.ayAdedi + " ay\t" + para(r.donemToplami));
     });
     satirlar.push("", "Toplam: " + para(s.toplam) + " (" + s.toplamAy + " ay)",
@@ -548,6 +802,8 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
   $("form").addEventListener("change", tazele);
   $("form").addEventListener("submit", function(e){ e.preventDefault(); });
 
+  elleFormuHazirla();
+  elleListeyiCiz();
   kunyeYaz();
   eskilikUyarisi();
   tazele();

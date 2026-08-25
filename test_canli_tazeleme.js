@@ -33,12 +33,15 @@ function Ogesi(etiket) {
 
 const idler = ["form", "tutar", "basAy", "basYil", "bitAy", "bitYil", "kapsam",
                "oranNot", "ozet", "cetvelBaslik", "cetvelAlt", "govde",
-               "uyarilar", "kopyala", "yazdir", "kunye", "indir", "indirNot", "veriUyari"];
+               "uyarilar", "kopyala", "yazdir", "kunye", "indir", "indirNot", "veriUyari",
+               "elleKutu", "elleEndeks", "elleYil", "elleAy", "elleOrt12", "elleYillik",
+               "elleHata", "elleEkle", "elleListe", "elleDurum"];
 
 function calistir(html) {
   const kayit = {};
   idler.forEach(id => { kayit[id] = Ogesi(id === "form" ? "form" : "div"); });
   kayit.tutar.value = "2000"; kayit.basYil.value = "2020";
+  kayit.elleEndeks.value = "TUFE";
 
   const radyolar = { endeks: [], oranTuru: [], referans: [] };
   const tum = [];
@@ -63,6 +66,9 @@ function calistir(html) {
     navigator: { clipboard: { writeText() { return Promise.resolve(); } } },
     print() {},
     Intl, setTimeout, clearTimeout, Date, Promise,
+    localStorage: { _k: {}, getItem(k){ return k in this._k ? this._k[k] : null; },
+                    setItem(k, v){ this._k[k] = String(v); },
+                    removeItem(k){ delete this._k[k]; } },
     fetch, AbortController                     // GERCEK ag
   };
   w.window = w;

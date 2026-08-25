@@ -16,12 +16,14 @@ const html = fs.readFileSync(dosya, "utf8");
 /* --- iskelet DOM ------------------------------------------------------ */
 function Ogesi(etiket) {
   const o = {
-    tagName: etiket, children: [], _dinleyici: {}, _value: "",
-    innerHTML: "", textContent: "", hidden: false, checked: false,
+    tagName: etiket, children: [], _dinleyici: {}, _value: "", _ozn: {},
+    innerHTML: "", textContent: "", hidden: false, checked: false, className: "",
     style: { cssText: "", setProperty() {} },
     appendChild(c) { this.children.push(c); return c; },
+    setAttribute(a, d) { this._ozn[a] = String(d); },
+    getAttribute(a) { return Object.prototype.hasOwnProperty.call(this._ozn, a) ? this._ozn[a] : null; },
     addEventListener(t, f) { (this._dinleyici[t] = this._dinleyici[t] || []).push(f); },
-    tetikle(t) { (this._dinleyici[t] || []).forEach(f => f({ preventDefault() {} })); }
+    tetikle(t, olay) { (this._dinleyici[t] || []).forEach(f => f(Object.assign({ preventDefault() {} }, olay))); }
   };
   Object.defineProperty(o, "value", {
     get() { return this._value; }, set(v) { this._value = String(v); }, enumerable: true
@@ -31,7 +33,21 @@ function Ogesi(etiket) {
 
 const idler = ["form", "tutar", "basAy", "basYil", "bitAy", "bitYil", "kapsam",
                "oranNot", "ozet", "cetvelBaslik", "cetvelAlt", "govde",
-               "uyarilar", "kopyala", "yazdir", "kunye", "indir", "indirNot", "veriUyari"];
+               "uyarilar", "kopyala", "yazdir", "kunye", "indir", "indirNot", "veriUyari",
+               "elleKutu", "elleEndeks", "elleYil", "elleAy", "elleOrt12", "elleYillik",
+               "elleHata", "elleEkle", "elleListe", "elleDurum"];
+
+/* Tarayicinin localStorage'i gibi davranan basit depo.
+   sec.depo ile paylasilirsa "sayfayi kapatip yeniden acma" taklit edilebilir. */
+function DepoYap(baslangic, calisir) {
+  const kutu = baslangic || {};
+  return {
+    kutu,
+    getItem(k) { if (!calisir) throw new Error("depo kapali"); return k in kutu ? kutu[k] : null; },
+    setItem(k, v) { if (!calisir) throw new Error("depo kapali"); kutu[k] = String(v); },
+    removeItem(k) { if (!calisir) throw new Error("depo kapali"); delete kutu[k]; }
+  };
+}
 
 /* Sayfayi bastan kurup calistirir.
    protokol      : "https:" yayindaki sayfa gibi, "file:" indirilen dosya gibi
@@ -44,6 +60,9 @@ function sayfayiKur(protokol, sec) {
   idler.forEach(id => { kayit[id] = Ogesi(id === "form" ? "form" : "div"); });
   kayit.tutar.value = "2000";
   kayit.basYil.value = "2020";
+  // Tarayici, secenekleri HTML'de yazan bir <select>'in degerini ilk secenege
+  // ayarlar; shim bunu kendiliginden yapmadigi icin burada taklit ediyoruz.
+  kayit.elleEndeks.value = "TUFE";
 
   const radyolar = { endeks: [], oranTuru: [], referans: [] };
   const tumRadyolar = [];
@@ -82,7 +101,8 @@ function sayfayiKur(protokol, sec) {
     print() { pano.yazdirildi = true; },
     Intl, setTimeout, clearTimeout, Date: SahteDate,
     AbortController: class { constructor() { this.signal = {}; } abort() {} },
-    Promise
+    Promise,
+    localStorage: sec.depo || DepoYap({}, sec.depoBozuk ? false : true)
   };
   if (!sec.fetchYok) {
     window.fetch = (url) => {
@@ -321,6 +341,133 @@ kontrol("aksan-uzeri her uc temada tanimli", uc === 3, "bulunan " + uc);
   kontrol("tazelendikten sonra da uyari duruyorsa dogru duruyor (2026-08 hala eski)",
           eskiAmaTazelendi.kayit.veriUyari.innerHTML.includes("Ağustos 2026"),
           eskiAmaTazelendi.kayit.veriUyari.innerHTML.slice(0, 160));
+
+  console.log("\n--- elle oran ekleme ---");
+  const depo = DepoYap({}, true);          // ayni "tarayici" - sayfalar arasi paylasilir
+  const s1 = sayfayiKur("https:", { depo });
+  await bekle();
+
+  // TUIK'in henuz vermedigi ay: gomulu son ayin bir sonrasi
+  const s = H.ayCoz(V.seriler.TUFE.son_ay);
+  const eksik = H.ayEkle(s.yil, s.ay, 1);
+  const eksikKod = H.ayKodu(eksik.yil, eksik.ay);
+  kontrol("form eksik olan ilk aya hazir geliyor",
+          s1.kayit.elleYil.value === String(eksik.yil) && s1.kayit.elleAy.value === String(eksik.ay),
+          s1.kayit.elleAy.value + "." + s1.kayit.elleYil.value);
+
+  // Eksik ayin orani ancak BIR SONRAKI ayda yil donumu olan bir dosyada kullanilir
+  // ("onceki ay" kurali). Gercekci senaryo: yil donumu Eylul, elimizde Temmuz'a
+  // kadar veri var, Agustos orani TUIK'te acik ama bize gelmemis.
+  const ydAy = eksik.ay % 12 + 1;                       // eksik ayin bir sonrasi
+  const ydYil = eksik.ay === 12 ? eksik.yil + 1 : eksik.yil;
+  s1.kayit.basAy.value = String(ydAy);
+  s1.kayit.bitYil.value = String(ydYil);
+  s1.kayit.bitAy.value = String(ydAy);
+  s1.kayit.elleOrt12.value = "31,25";
+  s1.kayit.elleEkle.tetikle("click");
+  kontrol("hata cikmadi", s1.kayit.elleHata.innerHTML === "", s1.kayit.elleHata.innerHTML);
+  kontrol("girilen oran listede", s1.kayit.elleListe.innerHTML.includes("31,25"),
+          s1.kayit.elleListe.innerHTML.slice(0, 200));
+  kontrol("listede 'hesapta kullanılıyor' yaziyor",
+          s1.kayit.elleListe.innerHTML.includes("hesapta kullanılıyor"));
+  kontrol("kapsam yeni aya uzadi",
+          s1.kayit.kapsam.innerHTML.includes(H.ayEtiket(eksik.yil, eksik.ay)),
+          s1.kayit.kapsam.innerHTML.slice(-140));
+  kontrol("cetvelde 'elle girildi' isareti var",
+          s1.kayit.govde.innerHTML.includes("elle girildi"),
+          s1.kayit.govde.innerHTML.slice(-300));
+  kontrol("depoya yazildi", JSON.stringify(depo.kutu).includes("31.25"), JSON.stringify(depo.kutu).slice(0, 160));
+
+  // ayni tarayicida sayfayi yeniden ac
+  const s2 = sayfayiKur("https:", { depo });
+  s2.kayit.basAy.value = String(ydAy);
+  s2.kayit.bitYil.value = String(ydYil);
+  s2.kayit.bitAy.value = String(ydAy);
+  s2.kayit.form.tetikle("input");
+  await bekle();
+  kontrol("sayfa yeniden acilinca oran duruyor",
+          s2.kayit.elleListe.innerHTML.includes("31,25"));
+  kontrol("yeniden acilista da cetvelde kullaniliyor",
+          s2.kayit.govde.innerHTML.includes("elle girildi"));
+
+  // siteden taze veri gelmesi elle girileni silmemeli
+  const tazeAmaEksik = JSON.parse(JSON.stringify(V));
+  const araAy = H.ayKodu(s.yil, s.ay);            // ayni son ay, yani bizim eklenen ay hala yok
+  tazeAmaEksik.seriler.TUFE.aylik[araAy] = V.seriler.TUFE.aylik[araAy];
+  tazeAmaEksik.cekilme_tarihi = "2027-01-01T00:00:00+00:00";
+  const s3 = sayfayiKur("https:", { depo, tazeVeri: tazeAmaEksik });
+  await bekle();
+  kontrol("tazeleme elle girileni silmedi", s3.kayit.elleListe.innerHTML.includes("31,25"));
+
+  // TUIK o ayi acikladiginda: resmi veri kazanir ama girilen SILINMEZ
+  const resmiGeldi = JSON.parse(JSON.stringify(V));
+  resmiGeldi.seriler.TUFE.aylik[eksikKod] = { endeks: 140, yillik: 30, ort12: 28.4 };
+  resmiGeldi.seriler.TUFE.son_ay = eksikKod;
+  const s4 = sayfayiKur("https:", { depo, tazeVeri: resmiGeldi });
+  s4.kayit.basAy.value = String(ydAy);
+  s4.kayit.bitYil.value = String(ydYil);
+  s4.kayit.bitAy.value = String(ydAy);
+  s4.kayit.form.tetikle("input");
+  await bekle();
+  kontrol("resmi veri gelince girilen listede DURUYOR",
+          s4.kayit.elleListe.innerHTML.includes("31,25"));
+  kontrol("ama artik kullanilmadigi yaziyor",
+          s4.kayit.elleListe.innerHTML.includes("TÜİK verisi geldi"),
+          s4.kayit.elleListe.innerHTML.slice(0, 260));
+  kontrol("hesap resmi orani kullaniyor",
+          s4.kayit.govde.innerHTML.includes("28,40") &&
+          !s4.kayit.govde.innerHTML.includes("31,25"),
+          s4.kayit.govde.innerHTML.slice(-320));
+
+  // silme yalnizca kullanici isteyince
+  const silDugmesi = { target: Object.assign(Ogesi("button"), { className: "sil" }) };
+  silDugmesi.target.setAttribute("data-endeks", "TUFE");
+  silDugmesi.target.setAttribute("data-ay", eksikKod);
+  s2.kayit.elleListe.tetikle("click", silDugmesi);
+  kontrol("silince listeden kalkti", !s2.kayit.elleListe.innerHTML.includes("31,25"),
+          s2.kayit.elleListe.innerHTML.slice(0, 160));
+  kontrol("silince depodan da kalkti", !JSON.stringify(depo.kutu).includes("31.25"),
+          JSON.stringify(depo.kutu).slice(0, 160));
+
+  console.log("\n--- elle oran: hatali girdi ve bozuk depo ---");
+  const s5 = sayfayiKur("https:", { depo: DepoYap({}, true) });
+  await bekle();
+  s5.kayit.elleOrt12.value = ""; s5.kayit.elleYillik.value = "";
+  s5.kayit.elleEkle.tetikle("click");
+  kontrol("bos oran reddedildi", s5.kayit.elleHata.innerHTML.includes("En az bir oran"),
+          s5.kayit.elleHata.innerHTML);
+  s5.kayit.elleOrt12.value = "9999";
+  s5.kayit.elleEkle.tetikle("click");
+  kontrol("sacma oran reddedildi", s5.kayit.elleHata.innerHTML.includes("arasında olmalı"),
+          s5.kayit.elleHata.innerHTML);
+  s5.kayit.elleOrt12.value = "abc";
+  s5.kayit.elleEkle.tetikle("click");
+  kontrol("sayi olmayan reddedildi", s5.kayit.elleHata.innerHTML.includes("sayı olmalı"),
+          s5.kayit.elleHata.innerHTML);
+  s5.kayit.elleOrt12.value = "25";
+  s5.kayit.elleYil.value = String(s.yil);
+  s5.kayit.elleAy.value = String(s.ay);          // TUIK verisi olan bir ay
+  s5.kayit.elleEkle.tetikle("click");
+  kontrol("TUIK verisi olan aya elle girmeye izin yok",
+          s5.kayit.elleHata.innerHTML.includes("zaten var"), s5.kayit.elleHata.innerHTML);
+
+  const bozukDepo = sayfayiKur("https:", { depoBozuk: true });
+  await bekle();
+  kontrol("depo calismiyorsa sayfa yine aciliyor",
+          (bozukDepo.kayit.govde.innerHTML.match(/<tr/g) || []).length >= 6);
+  kontrol("depo calismiyorsa durum bildiriliyor",
+          bozukDepo.kayit.elleDurum.textContent.includes("saklamıyor"),
+          bozukDepo.kayit.elleDurum.textContent);
+  bozukDepo.kayit.basAy.value = String(ydAy);
+  bozukDepo.kayit.bitYil.value = String(ydYil);
+  bozukDepo.kayit.bitAy.value = String(ydAy);
+  bozukDepo.kayit.elleOrt12.value = "31,25";
+  bozukDepo.kayit.elleEkle.tetikle("click");
+  kontrol("depo calismasa da oran hesaba katildi",
+          bozukDepo.kayit.govde.innerHTML.includes("elle girildi"));
+  kontrol("depo calismadigi durumu soyluyor",
+          bozukDepo.kayit.elleHata.innerHTML.includes("kaydedilemedi"),
+          bozukDepo.kayit.elleHata.innerHTML);
 
   console.log("\n--- yayimlanan veri dosyasi ---");
   // Bu kontrol depodaki yapiyla ilgili; disaridan bir dosya sinaniyorsa atlanir.
