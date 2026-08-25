@@ -77,7 +77,10 @@ function sayfayiKur(protokol, sec) {
     createElement: Ogesi,
     querySelector(s) {
       const m = /input\[name="(\w+)"\]:checked/.exec(s);
-      return m ? (radyolar[m[1]].find(r => r.checked) || null) : null;
+      // Sayfa, shim'in bilmedigi bir radyo grubunu soruyorsa gercek tarayici
+      // gibi null doner - yigin izi yerine anlasilir bir test hatasi ciksin.
+      if (!m || !radyolar[m[1]]) return null;
+      return radyolar[m[1]].find(r => r.checked) || null;
     },
     querySelectorAll: () => tumRadyolar
   };

@@ -41,7 +41,7 @@ Bu yüzden:
 | `docs/index.html` | **Üretilen dosya, elle düzenleme.** GitHub Pages bunu yayınlıyor. |
 | `.github/workflows/veri-guncelle.yml` | Aylık otomatik güncelleme. |
 | `test_hesap.js` | Hesap motoru (56 test) — `node test_hesap.js` |
-| `test_site.js` | Yayına giden sayfa (83 test) — `node test_site.js [dosya]` |
+| `test_site.js` | Yayına giden sayfa (89 test) — `node test_site.js [dosya]` |
 | `test_veri.py` | Veri güvenlik kontrolleri (15 test) — `py -3.13 test_veri.py` |
 | `kontrol.html` | Bağlantı teşhis sayfası. Bilerek **hiçbir dış kaynağı yok** (yazı tipi dahil) — ölçtüğü şey zaten dış erişim. `docs/kontrol.html`'e olduğu gibi kopyalanıyor. |
 | `test_kontrol.js` | Teşhis sayfası doğru teşhis koyuyor mu (23 test) — `node test_kontrol.js` |
@@ -217,12 +217,44 @@ kullanılır ("önceki ay" kuralı). Test yazarken buna dikkat — Ağustos oran
 sınamak için başlangıç ayı Eylül olmalı, yoksa oran hiç sorgulanmaz ve test
 boşuna düşer (bu tuzağa düşüldü).
 
+## Çok kullanıcı — neden sorun değil
+
+Kullanıcı sordu (25.08.2026): birden fazla kişi, farklı dosyalarda, belki
+aynı anda kullanacak.
+
+**Yapı gereği sorun çıkmıyor.** Sunucu, veritabanı, oturum yok. Her ziyaretçi
+sayfanın kendi kopyasını kendi tarayıcısında çalıştırıyor; paylaşılan hiçbir
+durum yok, dolayısıyla çakışacak bir şey de yok. Sayfa hiçbir yere veri
+göndermiyor (test bunu ölçüyor: POST, XHR, sendBeacon, WebSocket yok; tek
+dışa istek `veri.json`'u **okumak**).
+
+Ölçüldü (25.08.2026):
+- Sıkıştırılmış aktarım: `index.html` 26 KB + `veri.json` 12 KB = ziyaret başına ~38 KB
+- GitHub Pages yumuşak sınırı 100 GB/ay → kabaca **2,6 milyon ziyaret/ay**
+- 20 eşzamanlı istek: hepsi 200, toplam 1,15 sn
+
+Yani kullanıcı sayısı bir sorun hâline gelmeden çok önce başka her şey biter.
+
+**Gerçek (küçük) risk:** `localStorage` tarayıcı profili başına. Aynı bilgisayarı
+paylaşan iki kişi elle girilen oranları da paylaşır. TÜİK oranı evrensel bir
+veri olduğu için bu aslında doğru davranış — ama biri yanlış girerse diğeri de
+onu görür. Dosya bilgileri (tutar, tarih) hiç saklanmıyor, o yüzden dosyalar
+birbirine karışmıyor.
+
+**Yapılmadı, sorulmalı:** dosya bilgilerini adlandırıp kaydetme (bir kişi
+birden çok dosyayla çalışıyorsa her seferinde yeniden yazıyor). Kullanıcıya
+soruldu, cevap beklenmeden yapılmasın.
+
 ## Hesap kuralı
 
-Yıl dönümünde uygulanacak oran, varsayılan olarak **yıl dönümünden bir önceki
-ayın** oranı. Sebep: o ay, tamamlanmış son 12 ayı kapsıyor (Ocak yıl dönümü →
-Aralık oranı → tam takvim yılı). Arayüzde "yıl dönümü ayının kendisi" seçeneği
-de var, çünkü mahkeme kararlarının lafzı değişebiliyor.
+Yıl dönümünde uygulanacak oran **her zaman yıl dönümünden bir önceki ayın**
+oranı. Sebep: o ay, tamamlanmış son 12 ayı kapsıyor (Ocak yıl dönümü → Aralık
+oranı → tam takvim yılı).
+
+Bu bir seçenekti, **25.08.2026'da kullanıcı isteğiyle arayüzden kaldırıldı**
+("gerek yok, zaten hep önceki ay kullanılır"). Motordaki `referans: "ayni"`
+yolu duruyor — iki satır, testleri yazılı — bir gün karar lafzı farklı olursa
+tek satırla geri açılır. Arayüze sızmasın diye nöbetçi test var.
 
 Doğrulanmış örnek: Ocak 2022'de 1.000 ₺, TÜFE 12 aylık ortalama, önceki ay kuralı
 → 1.000 × 1,7231 × 1,5386 × 1,5851 × 1,3488 = **5.668,14 ₺** (2026 dönemi).
