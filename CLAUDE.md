@@ -43,6 +43,8 @@ Bu yüzden:
 | `test_hesap.js` | Hesap motoru (56 test) — `node test_hesap.js` |
 | `test_site.js` | Yayına giden sayfa (83 test) — `node test_site.js [dosya]` |
 | `test_veri.py` | Veri güvenlik kontrolleri (15 test) — `py -3.13 test_veri.py` |
+| `kontrol.html` | Bağlantı teşhis sayfası. Bilerek **hiçbir dış kaynağı yok** (yazı tipi dahil) — ölçtüğü şey zaten dış erişim. `docs/kontrol.html`'e olduğu gibi kopyalanıyor. |
+| `test_kontrol.js` | Teşhis sayfası doğru teşhis koyuyor mu (23 test) — `node test_kontrol.js` |
 | `test_canli_tazeleme.js` | Eskitilmiş kopya yayındaki `veri.json`'dan tazeleniyor mu (6 test, **ağa çıkar**; erişemezse kendini atlar) |
 
 `test_site.js` argüman alabiliyor: canlı sayfayı indirip `node test_site.js canli.html`
@@ -127,11 +129,22 @@ Ya da `gh workflow run veri-guncelle.yml --ref main`.
 
 ## Engelli ağ / internetsiz kullanım
 
-**Açık soru (25.08.2026 itibarıyla cevaplanmadı):** Adliye bilgisayarları
-`github.io` adresine erişebiliyor mu? Bilinmiyor, buradan ölçülemez. GitHub
-Pages kurumsal/kamu ağlarında "kullanıcı içeriği" ya da "proxy" kategorisinden
-engellenebiliyor. **Kesin cevap tek yoldan gelir: adliyedeki bir makinede
-adresi açmak.** Kullanıcıya soruldu, cevap gelince buraya yazılmalı.
+**AÇIK SORU — 26.08.2026'da ölçülecek.** Adliye bilgisayarları `github.io`
+adresine erişebiliyor mu? Bilinmiyor. GitHub Pages kurumsal/kamu ağlarında
+"kullanıcı içeriği" ya da "proxy" kategorisinden engellenebiliyor.
+
+Bunun için `kontrol.html` yazıldı: adliyede açılıp dört şeyi ölçüyor —
+siteye erişim, `veri.json`'a erişim, Google Fonts ve **tarayıcının
+`localStorage`'a izin verip vermediği**. Sonucu buraya yaz.
+
+**İkinci açık soru, ilki kadar önemli:** `file://` ile açılan sayfada
+`localStorage` çalışıyor mu? Chrome bazı durumlarda engelliyor. Çalışmıyorsa
+"elle girilen oran kalıcıdır" sözü indirilmiş dosyada tutmaz. Ölçülmedi,
+tahmin edilmedi — `kontrol.html` bunu da söylüyor.
+
+**Çalışmıyorsa plan B (henüz yapılmadı):** sayfa kendini elle girilen
+oranlarla birlikte yeni bir dosya olarak kaydettirsin (`Blob` + `<a download>`),
+böylece ayarlar dosyanın içine gömülür. Ölçüm gelmeden yapma.
 
 ### İndirilen dosya nasıl güncel kalıyor
 
