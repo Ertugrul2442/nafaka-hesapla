@@ -5,7 +5,8 @@ const path = require("path");
 const vm = require("vm");
 
 const kok = __dirname;
-const dosya = path.join(kok, "docs", "index.html");
+// argumanla baska bir dosya verilebilir - yayindaki sayfayi indirip test etmek icin
+const dosya = process.argv[2] || path.join(kok, "docs", "index.html");
 if (!fs.existsSync(dosya)) {
   console.error("docs/index.html yok. Once: py -3.13 site_yap.py");
   process.exit(1);
