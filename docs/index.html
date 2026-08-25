@@ -664,17 +664,45 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
   var AKTIF = VERI, birlesim = { kullanilan: [], gecersiz: [] };
   var depoCalisiyor = true;
 
+  /* Depodan gelene guvenmiyoruz: bozuk ya da beklenmedik biçimdeki kayitlar
+     sessizce hesaba karismasin diye ayikliyoruz. */
+  function temizle(o){
+    var sonuc = { TUFE: {}, UFE: {} };
+    if (!o || typeof o !== "object") return sonuc;
+    ["TUFE", "UFE"].forEach(function(kod){
+      var grup = o[kod];
+      if (!grup || typeof grup !== "object" || Array.isArray(grup)) return;
+      Object.keys(grup).forEach(function(ay){
+        if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(ay)) return;
+        var g = grup[ay];
+        if (!g || typeof g !== "object") return;
+        var kayit = {};
+        ["ort12", "yillik"].forEach(function(alan){
+          var d = g[alan];
+          if (typeof d === "number" && isFinite(d) && d >= -90 && d <= 1000) kayit[alan] = d;
+        });
+        if (kayit.ort12 !== undefined || kayit.yillik !== undefined) sonuc[kod][ay] = kayit;
+      });
+    });
+    return sonuc;
+  }
+
   function elleOku(){
+    var ham;
     try {
-      var ham = window.localStorage.getItem(DEPO);
-      if (!ham) return;
-      var o = JSON.parse(ham);
-      if (o && typeof o === "object") {
-        ELLE = { TUFE: o.TUFE || {}, UFE: o.UFE || {} };
-      }
+      ham = window.localStorage.getItem(DEPO);
     } catch (e) {
-      // Gizli sekme, dosya olarak acilmis sayfa, site verisi kapali tarayici...
+      // Gizli sekme, site verisi kapali tarayici, kurum politikasi...
       depoCalisiyor = false;
+      return;
+    }
+    if (!ham) return;
+    // Buraya geldiysek depo CALISIYOR. Icerik bozuksa bu depo sorunu degil;
+    // kaydi yok sayip devam ediyoruz, yoksa kullaniciya yanlis teshis gosterirdik.
+    try {
+      ELLE = temizle(JSON.parse(ham));
+    } catch (e) {
+      ELLE = { TUFE: {}, UFE: {} };
     }
   }
 

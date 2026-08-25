@@ -446,6 +446,30 @@ kontrol("aksan-uzeri her uc temada tanimli", uc === 3, "bulunan " + uc);
   kontrol("silince depodan da kalkti", !JSON.stringify(depo.kutu).includes("31.25"),
           JSON.stringify(depo.kutu).slice(0, 160));
 
+  console.log("\n--- depodaki kayit bozuksa ---");
+  // Bozuk JSON, deponun calismadigi anlamina GELMEZ: kaydi at, calismaya devam et.
+  const cop = sayfayiKur("https:", { depo: DepoYap({ "nafaka-elle-oranlar-v1": "{bozuk" }, true) });
+  await bekle();
+  kontrol("bozuk JSON sayfayi kirmadi",
+          (cop.kayit.govde.innerHTML.match(/<tr/g) || []).length >= 6);
+  kontrol("bozuk JSON 'depo calismiyor' demiyor",
+          !cop.kayit.elleDurum.textContent.includes("saklamıyor"),
+          cop.kayit.elleDurum.textContent);
+
+  const sacma = sayfayiKur("https:", { depo: DepoYap({ "nafaka-elle-oranlar-v1":
+    JSON.stringify({ TUFE: { "2026-08": { ort12: "abc" }, "bozuk-ay": { ort12: 5 },
+                             "2026-09": { ort12: 99999 }, "2026-10": { ort12: 31.5 } },
+                     UFE: "dizi degil" }) }, true) });
+  await bekle();
+  kontrol("sayi olmayan deger ayiklandi", !sacma.kayit.elleListe.innerHTML.includes("abc"));
+  kontrol("gecersiz ay kodu ayiklandi", !sacma.kayit.elleListe.innerHTML.includes("bozuk-ay"));
+  kontrol("aralik disi oran ayiklandi", !sacma.kayit.elleListe.innerHTML.includes("99.999"),
+          sacma.kayit.elleListe.innerHTML.slice(0, 240));
+  kontrol("gecerli kayit korundu", sacma.kayit.elleListe.innerHTML.includes("31,50"),
+          sacma.kayit.elleListe.innerHTML.slice(0, 240));
+  kontrol("nesne olmayan seri sayfayi kirmadi",
+          (sacma.kayit.govde.innerHTML.match(/<tr/g) || []).length >= 6);
+
   console.log("\n--- elle oran: hatali girdi ve bozuk depo ---");
   const s5 = sayfayiKur("https:", { depo: DepoYap({}, true) });
   await bekle();
