@@ -8,6 +8,16 @@ hesap cetveli.
 
 Kurulum yok, üyelik yok, veri toplanmıyor. Bütün hesap senin tarayıcında dönüyor.
 
+## İnternetsiz de çalışır
+
+Sayfanın tamamı tek dosya: veri de hesap da içinde. Sitedeki
+**"Bilgisayarına indir"** düğmesine basıp dosyayı kaydedersen, çift tıklayarak
+internetsiz açabilir, USB'yle taşıyabilir, e-postayla gönderebilirsin.
+
+Kurum ağı siteyi engelliyorsa (adliye, banka, kamu kurumu) işini bu görür.
+Yazı tipleri de engellenirse sayfa Windows'un kendi yazı tipleriyle açılır —
+görünüm biraz değişir, hesap aynı kalır.
+
 ## Ne yapıyor
 
 - Başlangıç tarihi ve tutarını giriyorsun.
