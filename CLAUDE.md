@@ -124,6 +124,35 @@ Ya da `gh workflow run veri-guncelle.yml --ref main`.
    ulaşılmıyor. Yine de TÜİK aylarca yayımlamazsa bu risk var — bayatlık
    kontrolü o durumda iş akışını düşürüp e-posta attırıyor.
 
+## Engelli ağ / internetsiz kullanım
+
+**Açık soru (25.08.2026 itibarıyla cevaplanmadı):** Adliye bilgisayarları
+`github.io` adresine erişebiliyor mu? Bilinmiyor, buradan ölçülemez. GitHub
+Pages kurumsal/kamu ağlarında "kullanıcı içeriği" ya da "proxy" kategorisinden
+engellenebiliyor. **Kesin cevap tek yoldan gelir: adliyedeki bir makinede
+adresi açmak.** Kullanıcıya soruldu, cevap gelince buraya yazılmalı.
+
+Cevabı beklemeden risk düşürüldü:
+- Sayfa **tek dosya** — veri de hesap da gömülü. Ölçüldü: yerel bağımlılık yok,
+  dışa giden tek istek Google Fonts.
+- Sitede **"Bilgisayarına indir"** bağlantısı var. İndirilen dosya internetsiz
+  çalışıyor. `file://` ile açılınca bağlantı kendini gizleyip notu değiştiriyor.
+- **Yazı tipi yığınları jetonda** (`--yazi-baslik/govde/sayi`). Google Fonts de
+  engellenirse Windows'un Georgia / Segoe UI / Consolas'ı devreye giriyor.
+  Eskiden jenerik `monospace` vardı, Times New Roman'a düşüyordu.
+- `test_site.js` sayfayı hem `https:` hem `file:` protokolüyle kurup sınıyor
+  ve dışa giden bağımlılık listesini ölçüyor (39 test).
+
+**Engelliyse seçenekler:** (a) kendi alan adı — düz bir `.com`, bilinen bir
+kullanıcı-içeriği alanı olmadığı için kategoriye takılma ihtimali çok daha
+düşük, yılda 10-15 dolar; (b) dosyayı doğrudan dağıtmak; (c) telefondan
+mobil veriyle açmak — kurum filtresini tamamen atlar.
+
+**Artifact sürümünde indirme bağlantısı yok** — Claude'un artifact
+görüntüleyicisi sayfalara dosya indirtmiyor, orada ölü düğme olurdu.
+`site_yap.py` onu artifact kopyasından çıkarıyor; şablon değişip parça
+eşleşmezse yapı sessizce geçmiyor, HATA verip duruyor.
+
 ## Hesap kuralı
 
 Yıl dönümünde uygulanacak oran, varsayılan olarak **yıl dönümünden bir önceki
