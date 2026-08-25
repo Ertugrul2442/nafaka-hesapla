@@ -139,8 +139,12 @@ if os.path.exists(yol):
             V.guvenlik_kontrolu(gercek, None) == [], str(V.guvenlik_kontrolu(gercek, None)))
     kontrol("yayindaki veri kendisiyle karsilastirilinca temiz",
             V.guvenlik_kontrolu(gercek, gercek) == [])
-    kontrol("yayindaki veri bayat degil", V.bayatlik_kontrolu(gercek) == [],
-            str(V.bayatlik_kontrolu(gercek)))
+    # Depodaki verinin taze olup olmadigi BURADA bir iddia degil, yalnizca bilgi.
+    # Iddia yapilirsa kilitlenme olur: veri bayatladiginda bu test duser, is akisi
+    # veriyi cekmeye bile baslamadan durur ve bayatligi hicbir zaman duzeltemez.
+    # Bayatlik alarmi dogru yerde -- veri_cek.py'de, cekim yapildiktan sonra -- caliyor.
+    bayat = V.bayatlik_kontrolu(gercek)
+    print("  bilgi  depodaki veri " + ("TAZE" if not bayat else "bayat: " + "; ".join(bayat)))
 else:
     print("  (veri/endeksler.json yok, atlandi)")
 
