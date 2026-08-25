@@ -41,7 +41,7 @@ Bu yüzden:
 | `docs/index.html` | **Üretilen dosya, elle düzenleme.** GitHub Pages bunu yayınlıyor. |
 | `.github/workflows/veri-guncelle.yml` | Aylık otomatik güncelleme. |
 | `test_hesap.js` | Hesap motoru (56 test) — `node test_hesap.js` |
-| `test_site.js` | Yayına giden sayfa (89 test) — `node test_site.js [dosya]` |
+| `test_site.js` | Yayına giden sayfa (96 test) — `node test_site.js [dosya]` |
 | `test_veri.py` | Veri güvenlik kontrolleri (15 test) — `py -3.13 test_veri.py` |
 | `kontrol.html` | Bağlantı teşhis sayfası. Bilerek **hiçbir dış kaynağı yok** (yazı tipi dahil) — ölçtüğü şey zaten dış erişim. `docs/kontrol.html`'e olduğu gibi kopyalanıyor. |
 | `test_kontrol.js` | Teşhis sayfası doğru teşhis koyuyor mu (23 test) — `node test_kontrol.js` |
@@ -137,14 +137,15 @@ Bunun için `kontrol.html` yazıldı: adliyede açılıp dört şeyi ölçüyor 
 siteye erişim, `veri.json`'a erişim, Google Fonts ve **tarayıcının
 `localStorage`'a izin verip vermediği**. Sonucu buraya yaz.
 
-**İkinci açık soru, ilki kadar önemli:** `file://` ile açılan sayfada
-`localStorage` çalışıyor mu? Chrome bazı durumlarda engelliyor. Çalışmıyorsa
-"elle girilen oran kalıcıdır" sözü indirilmiş dosyada tutmaz. Ölçülmedi,
-tahmin edilmedi — `kontrol.html` bunu da söylüyor.
+**İkinci soru CEVAPLANDI (25.08.2026):** `file://` ile açılan sayfada
+`localStorage` **çalışıyor** — Ertuğrul'un makinesinde `kontrol.html` dosyadan
+açılıp ölçüldü, "Ayar saklama ✓". Yani indirilen dosyada elle girilen oranlar
+kalıcı. Bu, kullanıcının kendi Windows makinesinde ölçüldü; adliyede kurum
+politikası site verisini kapatmış olabilir — `kontrol.html` orada da söyleyecek.
 
-**Çalışmıyorsa plan B (henüz yapılmadı):** sayfa kendini elle girilen
-oranlarla birlikte yeni bir dosya olarak kaydettirsin (`Blob` + `<a download>`),
-böylece ayarlar dosyanın içine gömülür. Ölçüm gelmeden yapma.
+**Plan B'ye gerek kalmadı, YAPILMADI:** ayarları dosyanın içine gömme
+(`Blob` + `<a download>`) fikri rafta. Yalnızca adliyede "Ayar saklama ×"
+çıkarsa gündeme gelsin.
 
 ### İndirilen dosya nasıl güncel kalıyor
 
