@@ -1,0 +1,465 @@
+<!--BAS-->
+<title>Nafaka Artış Cetveli</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap">
+
+<style>
+/* ---------- jetonlar: acik palet tam olarak burada tanimli ---------- */
+:root{
+  --kagit:#f4f5f7;
+  --yuzey:#ffffff;
+  --yuzey-ic:#f8f9fa;
+  --murekkep:#191d24;
+  --ara:#646c7a;
+  --cizgi:#dcdfe5;
+  --cizgi-kalin:#c3c8d1;
+  --aksan:#8c2f39;
+  --aksan-uzeri:#ffffff;
+  --aksan-yumusak:#f6ebec;
+  --aksan-cizgi:#e3c9cc;
+  --uyari:#8a5a00;
+  --uyari-zemin:#fdf5e4;
+  --uyari-cizgi:#e8d5a8;
+  --golge:0 1px 1px rgba(25,29,36,.04), 0 6px 20px -8px rgba(25,29,36,.12);
+  --olcek:1;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --kagit:#14171c;
+    --yuzey:#1b1f26;
+    --yuzey-ic:#20242c;
+    --murekkep:#e7e9ed;
+    --ara:#98a1b0;
+    --cizgi:#2c313a;
+    --cizgi-kalin:#3a4049;
+    --aksan:#e2818b;
+    --aksan-uzeri:#14171c;
+    --aksan-yumusak:#2a1c1f;
+    --aksan-cizgi:#4a3035;
+    --uyari:#e3b768;
+    --uyari-zemin:#2a2213;
+    --uyari-cizgi:#4d3f22;
+    --golge:0 1px 1px rgba(0,0,0,.3), 0 6px 20px -8px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --kagit:#14171c;
+  --yuzey:#1b1f26;
+  --yuzey-ic:#20242c;
+  --murekkep:#e7e9ed;
+  --ara:#98a1b0;
+  --cizgi:#2c313a;
+  --cizgi-kalin:#3a4049;
+  --aksan:#e2818b;
+  --aksan-uzeri:#14171c;
+  --aksan-yumusak:#2a1c1f;
+  --aksan-cizgi:#4a3035;
+  --uyari:#e3b768;
+  --uyari-zemin:#2a2213;
+  --uyari-cizgi:#4d3f22;
+  --golge:0 1px 1px rgba(0,0,0,.3), 0 6px 20px -8px rgba(0,0,0,.5);
+}
+
+*{box-sizing:border-box}
+h1,h2,h3,p{margin:0}
+
+body{
+  margin:0;
+  background:var(--kagit);
+  color:var(--murekkep);
+  font-family:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+
+.sayfa{max-width:1120px;margin:0 auto;padding:40px 22px 72px}
+
+/* ---------- baslik ---------- */
+.ust{
+  display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;
+  gap:18px;padding-bottom:20px;border-bottom:2px solid var(--cizgi-kalin);
+}
+.ust h1{
+  font-family:"Source Serif 4",Georgia,serif;
+  font-weight:700;font-size:clamp(28px,4vw,38px);line-height:1.1;
+  margin:0 0 8px;letter-spacing:-.015em;text-wrap:balance;
+}
+.ust p{margin:0;color:var(--ara);font-size:15.5px;max-width:56ch;text-wrap:pretty}
+.kapsam{
+  flex:0 0 auto;font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.7;
+  color:var(--ara);text-align:right;
+}
+.kapsam b{display:block;color:var(--murekkep);font-weight:600;font-size:12.5px}
+
+/* ---------- iki sutun ---------- */
+.govde{display:grid;grid-template-columns:330px minmax(0,1fr);gap:28px;margin-top:28px;align-items:start}
+@media (max-width:880px){.govde{grid-template-columns:1fr}}
+
+/* ---------- form ---------- */
+.panel{
+  background:var(--yuzey);border:1px solid var(--cizgi);border-radius:4px;
+  box-shadow:var(--golge);padding:20px;
+}
+.panel > h2{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.11em;color:var(--ara);
+  margin:0 0 18px;padding-bottom:10px;border-bottom:1px solid var(--cizgi);
+}
+.alan{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.alan:last-child{margin-bottom:0}
+.alan > label,.grupBaslik{
+  font-size:12.5px;font-weight:600;color:var(--murekkep);letter-spacing:.005em;
+}
+input,select{
+  width:100%;padding:9px 11px;border:1px solid var(--cizgi-kalin);border-radius:3px;
+  background:var(--yuzey-ic);color:var(--murekkep);
+  font-family:"IBM Plex Mono",monospace;font-size:14px;
+}
+select{font-family:"Source Sans 3",sans-serif;font-size:14.5px}
+input:focus-visible,select:focus-visible{
+  outline:2px solid var(--aksan);outline-offset:1px;border-color:var(--aksan);
+}
+.ikili{display:grid;grid-template-columns:1.25fr 1fr;gap:8px}
+
+.segment{display:flex;border:1px solid var(--cizgi-kalin);border-radius:3px;overflow:hidden}
+.segment label{
+  flex:1;display:flex;align-items:center;justify-content:center;text-align:center;
+  padding:8px 6px;font-size:13.5px;font-weight:500;cursor:pointer;
+  background:var(--yuzey-ic);color:var(--ara);
+  border-right:1px solid var(--cizgi-kalin);transition:background .12s,color .12s;
+}
+.segment label:last-child{border-right:none}
+.segment input{position:absolute;opacity:0;width:1px;height:1px}
+.segment label:has(input:checked){
+  background:var(--aksan);color:var(--aksan-uzeri);font-weight:600;
+}
+.segment label:has(input:focus-visible){outline:2px solid var(--aksan);outline-offset:-2px}
+
+.not{font-size:12.5px;line-height:1.5;color:var(--ara);margin:2px 0 0;text-wrap:pretty}
+
+/* ---------- ozet kutulari ---------- */
+.ozet{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:1px;
+  background:var(--cizgi);border:1px solid var(--cizgi);border-radius:4px;overflow:hidden;margin-bottom:22px}
+.ozet > div{background:var(--yuzey);padding:14px 16px}
+.ozet .et{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:500;
+  text-transform:uppercase;letter-spacing:.09em;color:var(--ara);
+}
+.ozet .dg{
+  font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+  font-size:21px;font-weight:600;letter-spacing:-.02em;margin-top:5px;line-height:1.2;
+}
+.ozet .bas .dg{color:var(--aksan);font-size:24px}
+
+/* ---------- cetvel ---------- */
+.cetvel{background:var(--yuzey);border:1px solid var(--cizgi);border-radius:4px;
+  box-shadow:var(--golge);overflow:hidden}
+.cetvelUst{
+  display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:14px 18px;border-bottom:1px solid var(--cizgi);background:var(--yuzey-ic);
+}
+.cetvelUst h2{
+  font-family:"Source Serif 4",Georgia,serif;font-size:17px;font-weight:600;margin:0;
+}
+.cetvelUst span{font-size:13px;color:var(--ara)}
+.kaydir{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{padding:11px 14px;text-align:right;white-space:nowrap}
+th{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:500;
+  text-transform:uppercase;letter-spacing:.09em;color:var(--ara);
+  border-bottom:1px solid var(--cizgi-kalin);
+}
+td{border-bottom:1px solid var(--cizgi)}
+tbody tr:last-child td{border-bottom:none}
+th:first-child,td:first-child{text-align:left}
+.donem{font-weight:500}
+.donem small{display:block;font-size:11.5px;color:var(--ara);font-weight:400;margin-top:1px}
+.sayi{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-size:14px}
+.tutar{font-weight:600}
+.rozet{
+  display:inline-block;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+  font-size:13px;font-weight:600;color:var(--aksan);
+  background:var(--aksan-yumusak);border:1px solid var(--aksan-cizgi);
+  border-radius:3px;padding:2px 8px;
+}
+.rozet.yok{color:var(--ara);background:var(--yuzey-ic);border-color:var(--cizgi);font-weight:400}
+.refay{display:block;font-size:11px;color:var(--ara);margin-top:3px;font-family:"Source Sans 3",sans-serif}
+tbody tr.sonDonem td{background:var(--aksan-yumusak)}
+tbody tr.sonDonem .tutar{color:var(--aksan)}
+
+/* ---------- uyari ---------- */
+.uyari{
+  display:flex;gap:10px;background:var(--uyari-zemin);border:1px solid var(--uyari-cizgi);
+  color:var(--uyari);border-radius:4px;padding:12px 14px;font-size:13.5px;
+  line-height:1.5;margin-top:16px;text-wrap:pretty;
+}
+.uyari b{font-weight:600}
+
+/* ---------- dugmeler ---------- */
+.eylem{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+button{
+  font-family:"Source Sans 3",sans-serif;font-size:14px;font-weight:600;
+  padding:9px 16px;border-radius:3px;cursor:pointer;
+  border:1px solid var(--cizgi-kalin);background:var(--yuzey);color:var(--murekkep);
+  transition:border-color .12s,color .12s;
+}
+button:hover{border-color:var(--aksan);color:var(--aksan)}
+button:focus-visible{outline:2px solid var(--aksan);outline-offset:2px}
+
+/* ---------- dipnot ---------- */
+.dip{
+  margin-top:32px;padding-top:20px;border-top:1px solid var(--cizgi);
+  font-size:13px;line-height:1.65;color:var(--ara);display:grid;gap:10px;
+}
+.dip p{margin:0}
+.dip strong{color:var(--murekkep);font-weight:600}
+.dip .kunye{font-family:"IBM Plex Mono",monospace;font-size:11.5px}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+
+/* ---------- kagida basarken: form ve dugmeler cikmasin, cetvel tam bassin ---------- */
+@media print{
+  .sayfa{max-width:none;padding:0}
+  .govde{display:block}
+  .panel,.eylem{display:none}
+  .cetvel,.ozet{box-shadow:none;break-inside:avoid}
+  .ust{border-bottom-width:1px}
+  tbody tr.sonDonem td{background:transparent}
+  tbody tr.sonDonem .tutar{color:inherit;text-decoration:underline}
+}
+</style>
+<!--BAS_SON-->
+
+<div class="sayfa">
+
+  <header class="ust">
+    <div>
+      <h1>Nafaka Artış Cetveli</h1>
+      <p>Mahkemenin belirlediği aylık nafakayı, TÜİK'in enflasyon oranıyla her yıl dönümünde güncelleyip hangi dönemde ne kadar ödenmesi gerektiğini çıkarır.</p>
+    </div>
+    <div class="kapsam" id="kapsam"></div>
+  </header>
+
+  <div class="govde">
+
+    <form class="panel" id="form" autocomplete="off">
+      <h2>Dosya bilgileri</h2>
+
+      <div class="alan">
+        <label for="tutar">Başlangıç aylık nafakası (₺)</label>
+        <input id="tutar" type="number" min="0" step="0.01" value="2000" inputmode="decimal">
+      </div>
+
+      <div class="alan">
+        <label for="basAy">Nafakanın başladığı tarih</label>
+        <div class="ikili">
+          <select id="basAy"></select>
+          <input id="basYil" type="number" step="1" value="2020">
+        </div>
+      </div>
+
+      <div class="alan">
+        <label for="bitAy">Hesabın biteceği tarih</label>
+        <div class="ikili">
+          <select id="bitAy"></select>
+          <input id="bitYil" type="number" step="1">
+        </div>
+      </div>
+
+      <div class="alan">
+        <span class="grupBaslik">Hangi endeks</span>
+        <div class="segment">
+          <label><input type="radio" name="endeks" value="TUFE" checked>TÜFE</label>
+          <label><input type="radio" name="endeks" value="UFE">Yİ-ÜFE</label>
+        </div>
+      </div>
+
+      <div class="alan">
+        <span class="grupBaslik">Hangi oran</span>
+        <div class="segment">
+          <label><input type="radio" name="oranTuru" value="ort12" checked>12 aylık ortalama</label>
+          <label><input type="radio" name="oranTuru" value="yillik">Yıllık</label>
+        </div>
+        <p class="not" id="oranNot"></p>
+      </div>
+
+      <div class="alan">
+        <span class="grupBaslik">Artışta hangi ayın oranı</span>
+        <div class="segment">
+          <label><input type="radio" name="referans" value="onceki" checked>Önceki ay</label>
+          <label><input type="radio" name="referans" value="ayni">Yıl dönümü ayı</label>
+        </div>
+        <p class="not">Ocak yıl dönümünde “önceki ay” Aralık oranını uygular; Aralık oranı tam bir takvim yılını kapsadığı için kararların çoğu buna denk düşer.</p>
+      </div>
+    </form>
+
+    <main>
+      <div class="ozet" id="ozet"></div>
+
+      <section class="cetvel">
+        <div class="cetvelUst">
+          <h2 id="cetvelBaslik">Dönem cetveli</h2>
+          <span id="cetvelAlt"></span>
+        </div>
+        <div class="kaydir">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Dönem</th>
+                <th scope="col">Uygulanan artış</th>
+                <th scope="col">Aylık nafaka</th>
+                <th scope="col">Ay</th>
+                <th scope="col">Dönem toplamı</th>
+              </tr>
+            </thead>
+            <tbody id="govde"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div id="uyarilar"></div>
+
+      <div class="eylem">
+        <button type="button" id="kopyala">Cetveli kopyala</button>
+        <button type="button" id="yazdir">Yazdır / PDF</button>
+      </div>
+    </main>
+  </div>
+
+  <footer class="dip">
+    <p><strong>Veri kaynağı.</strong> TÜİK Veri Portalı, resmî aylık fiyat endeksi serileri. TÜİK yeni ayı her ayın 3'ünde yayımlıyor; bu sayfa onu kendiliğinden alıp güncelliyor. <span id="kunye" class="kunye"></span></p>
+    <p><strong>“On iki aylık ortalama” ne demek.</strong> Son 12 ayın endeks ortalamasının, ondan önceki 12 ayın ortalamasına göre değişimi. Tek bir ayın sıçramasından az etkilendiği için nafaka kararlarında en sık bu ölçü geçer. “Yıllık” ise yalnız o ayın, geçen yılın aynı ayına göre değişimidir.</p>
+    <p><strong>Bu bir hesap makinesidir, hukuki görüş değildir.</strong> Kararındaki artış maddesinin lafzı — hangi endeks, hangi oran, hangi tarih — sonucu değiştirir. Kararı okuyup seçenekleri ona göre ayarla.</p>
+  </footer>
+</div>
+
+<script>window.ENDEKS_VERISI = /*__VERI__*/null/*__VERI_SON__*/;</script>
+<script>/*__HESAP__*/</script>
+<script>
+(function(){
+  "use strict";
+  var H = window.NafakaHesap, VERI = window.ENDEKS_VERISI;
+  var $ = function(id){ return document.getElementById(id); };
+  var bicimPara = new Intl.NumberFormat("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  var bicimOran = new Intl.NumberFormat("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  function para(n){ return bicimPara.format(n) + " ₺"; }
+  function sec(ad){ var e = document.querySelector('input[name="'+ad+'"]:checked'); return e && e.value; }
+  function kacis(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+  H.AY_ADI.forEach(function(ad,i){
+    ["basAy","bitAy"].forEach(function(id){
+      var o = document.createElement("option");
+      o.value = String(i+1); o.textContent = ad; $(id).appendChild(o);
+    });
+  });
+  $("basAy").value = "1";
+
+  var sonTufe = H.ayCoz(VERI.seriler.TUFE.son_ay);
+  $("bitYil").value = sonTufe.yil;
+  $("bitAy").value = String(sonTufe.ay);
+
+  function kunyeYaz(){
+    var t = VERI.seriler.TUFE, u = VERI.seriler.UFE;
+    var ti = H.ayCoz(t.ilk_ay), ts = H.ayCoz(t.son_ay);
+    var ui = H.ayCoz(u.ilk_ay), us = H.ayCoz(u.son_ay);
+    $("kapsam").innerHTML =
+      "<b>TÜFE</b>" + H.ayEtiket(ti.yil,ti.ay) + " – " + H.ayEtiket(ts.yil,ts.ay) +
+      "<b style='margin-top:6px'>Yİ-ÜFE</b>" + H.ayEtiket(ui.yil,ui.ay) + " – " + H.ayEtiket(us.yil,us.ay);
+    $("kunye").textContent = "Veri " + VERI.cekilme_tarihi.slice(0,10) + " tarihinde çekildi.";
+  }
+
+  function tazele(){
+    var endeks = sec("endeks"), oranTuru = sec("oranTuru");
+    $("oranNot").textContent = oranTuru === "ort12"
+      ? "Nafaka kararlarında en sık geçen ölçü budur."
+      : "Kararında “yıllık TÜFE/ÜFE oranında” yazıyorsa bunu seç.";
+
+    var s = H.hesapla(VERI, {
+      endeks:endeks, oranTuru:oranTuru, referans:sec("referans"),
+      baslangicYil:+$("basYil").value, baslangicAy:+$("basAy").value,
+      baslangicTutar:+$("tutar").value,
+      bitisYil:+$("bitYil").value, bitisAy:+$("bitAy").value
+    });
+
+    var seriAdi = VERI.seriler[endeks].ad;
+    $("cetvelBaslik").textContent = "Dönem cetveli";
+    $("cetvelAlt").textContent = seriAdi + " · " +
+      (oranTuru === "ort12" ? "on iki aylık ortalamalara göre değişim" : "yıllık değişim");
+
+    $("uyarilar").innerHTML = s.uyarilar.map(function(u){
+      return '<div class="uyari"><b>Not</b><span>'+kacis(u)+'</span></div>';
+    }).join("");
+
+    if (!s.satirlar.length){
+      $("ozet").innerHTML = "";
+      $("govde").innerHTML = '<tr><td colspan="5" style="color:var(--ara);text-align:left">Girilen tarihlerle cetvel oluşmadı.</td></tr>';
+      return;
+    }
+
+    var ilk = s.satirlar[0], son = s.satirlar[s.satirlar.length-1];
+    var kat = ilk.aylikTutar ? son.aylikTutar / ilk.aylikTutar : 0;
+    function kutu(et,dg,bas){
+      return '<div'+(bas?' class="bas"':'')+'><div class="et">'+et+'</div><div class="dg">'+dg+'</div></div>';
+    }
+    $("ozet").innerHTML =
+      kutu("Son dönemde aylık", para(son.aylikTutar), true) +
+      kutu("Başlangıcın katı", bicimOran.format(kat) + "×") +
+      kutu("Dönem boyu toplam", para(s.toplam)) +
+      kutu("Kapsanan süre", s.toplamAy + " ay");
+
+    $("govde").innerHTML = s.satirlar.map(function(r,i){
+      var sonMu = i === s.satirlar.length-1;
+      var oranHucre = r.oran === null
+        ? '<span class="rozet yok">başlangıç</span>'
+        : '<span class="rozet">%'+bicimOran.format(r.oran)+'</span>'+
+          '<span class="refay">'+kacis(r.oranAyEtiket)+' oranı</span>';
+      return '<tr'+(sonMu?' class="sonDonem"':'')+'>'+
+        '<td class="donem">'+kacis(r.basEtiket)+' – '+kacis(r.sonEtiket)+'</td>'+
+        '<td>'+oranHucre+'</td>'+
+        '<td class="sayi tutar">'+para(r.aylikTutar)+'</td>'+
+        '<td class="sayi">'+r.ayAdedi+'</td>'+
+        '<td class="sayi">'+para(r.donemToplami)+'</td>'+
+      '</tr>';
+    }).join("");
+
+    window._son = s;
+  }
+
+  $("kopyala").addEventListener("click", function(){
+    var s = window._son; if (!s) return;
+    var endeks = sec("endeks");
+    var satirlar = [
+      VERI.seriler[endeks].ad + " — " +
+      (sec("oranTuru")==="ort12" ? "on iki aylık ortalamalara göre değişim" : "yıllık değişim"), ""
+    ];
+    s.satirlar.forEach(function(r){
+      satirlar.push(
+        r.basEtiket + " – " + r.sonEtiket + "\t" +
+        (r.oran===null ? "başlangıç" : "%"+bicimOran.format(r.oran)+" ("+r.oranAyEtiket+")") + "\t" +
+        para(r.aylikTutar) + "\t" + r.ayAdedi + " ay\t" + para(r.donemToplami));
+    });
+    satirlar.push("", "Toplam: " + para(s.toplam) + " (" + s.toplamAy + " ay)",
+      "Kaynak: TÜİK, veri " + VERI.cekilme_tarihi.slice(0,10) + " tarihinde alındı.");
+    var d = $("kopyala"), eski = d.textContent;
+    navigator.clipboard.writeText(satirlar.join("\n")).then(function(){
+      d.textContent = "Kopyalandı"; setTimeout(function(){ d.textContent = eski; }, 1600);
+    }, function(){
+      d.textContent = "Kopyalanamadı"; setTimeout(function(){ d.textContent = eski; }, 1600);
+    });
+  });
+
+  $("yazdir").addEventListener("click", function(){ window.print(); });
+
+  $("form").addEventListener("input", tazele);
+  $("form").addEventListener("change", tazele);
+  $("form").addEventListener("submit", function(e){ e.preventDefault(); });
+
+  kunyeYaz();
+  tazele();
+})();
+</script>

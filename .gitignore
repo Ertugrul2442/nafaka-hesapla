@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+# Claude artifact baglantisini tazelemek icin uretilen kopya - yayina girmiyor
+nafaka_artifact.html

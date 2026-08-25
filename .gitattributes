@@ -1,0 +1,3 @@
+# Depoda her sey LF. Aksi halde Windows'ta uretilen CRLF, GitHub Actions'taki
+# bash betigini bozuyor ($'\r': command not found).
+* text=auto eol=lf

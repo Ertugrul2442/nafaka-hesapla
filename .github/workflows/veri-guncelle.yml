@@ -1,0 +1,73 @@
+name: TÜİK verisini güncelle
+
+# TÜİK, bir önceki ayın enflasyon verisini her ayın 3'ünde saat 10:00'da yayımlıyor.
+# Yayın gecikirse kaçırmamak için ayın 3-8'i arasında günde iki kez bakıyoruz.
+# Veri değişmemişse hiçbir şey işlenmiyor; değişmişse sayfa yeniden kurulup
+# testlerden geçtikten SONRA yayına gidiyor.
+on:
+  schedule:
+    - cron: "0 8,13 3-8 * *"     # UTC -> Türkiye saatiyle 11:00 ve 16:00
+  workflow_dispatch:              # Actions sekmesinden elle de çalıştırılabilir
+
+permissions:
+  contents: write
+
+concurrency:
+  group: veri-guncelle
+  cancel-in-progress: false
+
+jobs:
+  guncelle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Güvenlik kontrollerinin kendi testleri
+        run: python test_veri.py
+
+      - name: TÜİK'ten veriyi çek
+        id: cek
+        run: |
+          set +e
+          python veri_cek.py
+          kod=$?
+          set -e
+          case $kod in
+            0) echo "yeni=evet"  >> "$GITHUB_OUTPUT"; echo "Yeni veri geldi." ;;
+            3) echo "yeni=hayir" >> "$GITHUB_OUTPUT"; echo "Veri değişmemiş, yapacak bir şey yok." ;;
+            *) echo "::error::veri_cek.py $kod koduyla düştü - veri GÜNCELLENMEDİ, eski veri yayında duruyor"
+               exit 1 ;;
+          esac
+
+      - name: Sayfayı yeniden kur
+        if: steps.cek.outputs.yeni == 'evet'
+        run: python site_yap.py
+
+      - name: Testler (geçmezse yayına çıkmaz)
+        if: steps.cek.outputs.yeni == 'evet'
+        run: |
+          node test_hesap.js
+          node test_site.js
+
+      - name: Değişikliği işle ve yayına gönder
+        if: steps.cek.outputs.yeni == 'evet'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add veri/endeksler.json docs/index.html
+          if git diff --cached --quiet; then
+            echo "::warning::veri_cek.py yeni veri dedi ama dosyalarda fark yok - beklenmedik"
+            exit 0
+          fi
+          son=$(python -c "import json;print(json.load(open('veri/endeksler.json',encoding='utf-8'))['seriler']['TUFE']['son_ay'])")
+          git commit -m "veri: TÜİK $son verisi"
+          git push
+          echo "### TÜİK $son verisi yayına gitti" >> "$GITHUB_STEP_SUMMARY"
