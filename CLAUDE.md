@@ -41,7 +41,7 @@ Bu yüzden:
 | `docs/index.html` | **Üretilen dosya, elle düzenleme.** GitHub Pages bunu yayınlıyor. |
 | `.github/workflows/veri-guncelle.yml` | Aylık otomatik güncelleme. |
 | `test_hesap.js` | Hesap motoru (56 test) — `node test_hesap.js` |
-| `test_site.js` | Yayına giden sayfa (96 test) — `node test_site.js [dosya]` |
+| `test_site.js` | Yayına giden sayfa (105 test) — `node test_site.js [dosya]` |
 | `test_veri.py` | Veri güvenlik kontrolleri (15 test) — `py -3.13 test_veri.py` |
 | `kontrol.html` | Bağlantı teşhis sayfası. Bilerek **hiçbir dış kaynağı yok** (yazı tipi dahil) — ölçtüğü şey zaten dış erişim. `docs/kontrol.html`'e olduğu gibi kopyalanıyor. |
 | `test_kontrol.js` | Teşhis sayfası doğru teşhis koyuyor mu (23 test) — `node test_kontrol.js` |
@@ -148,6 +148,25 @@ politikası site verisini kapatmış olabilir — `kontrol.html` orada da söyle
 çıkarsa gündeme gelsin.
 
 ### İndirilen dosya nasıl güncel kalıyor
+
+**Üç katman var, sırayla:**
+
+1. **Onbellek** (`nafaka-veri-onbellek-v1`, localStorage) — daha önce ağa
+   çıkıldığında indirilmiş veri. Açılışta okunur; gömülüden yeniyse o kullanılır.
+2. **Ağ** — her açılışta `docs/veri.json` çekilmeye çalışılır (5 sn zaman aşımı).
+   Başarılıysa kullanılır **ve önbelleğe yazılır**.
+3. **Gömülü** — dosya kurulurken içine konan veri. Diğer ikisi yoksa bu.
+
+Hangisinin kullanıldığı sağ üstte yazıyor: "dosyaya gömülü veri" /
+"daha önce indirilmiş veri" / "siteden tazelendi".
+
+**26.08.2026 öncesi hata — kullanıcının sorusu ortaya çıkardı.** Onbellek katmanı
+yoktu: dosya evde açılıp güncel veriyi çekiyor ama kaydetmiyordu, ertesi gün ağsız
+açıldığında yine gömülü eski veriye dönüyordu. Yani engelli ağda tazelemenin
+hiçbir faydası olmuyordu — tam da onun için yapılmış olmasına rağmen.
+Soru: "site açılmazsa dosyayı dağıtırsam güncelleme yapabilir mi?" Cevap
+hayırdı; şimdi evet.
+
 
 Kullanıcı iki gerçek deliği yakaladı (25.08.2026) ve ikisi de kapatıldı:
 
