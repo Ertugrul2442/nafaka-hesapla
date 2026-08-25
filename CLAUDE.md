@@ -40,8 +40,8 @@ Bu yüzden:
 | `site_yap.py` | Şablon + veri + `hesap.js` → `docs/index.html`, `docs/veri.json` ve `nafaka_artifact.html`. |
 | `docs/index.html` | **Üretilen dosya, elle düzenleme.** GitHub Pages bunu yayınlıyor. |
 | `.github/workflows/veri-guncelle.yml` | Aylık otomatik güncelleme. |
-| `test_hesap.js` | Hesap motoru (36 test) — `node test_hesap.js` |
-| `test_site.js` | Yayına giden sayfa (60 test) — `node test_site.js [dosya]` |
+| `test_hesap.js` | Hesap motoru (56 test) — `node test_hesap.js` |
+| `test_site.js` | Yayına giden sayfa (83 test) — `node test_site.js [dosya]` |
 | `test_veri.py` | Veri güvenlik kontrolleri (15 test) — `py -3.13 test_veri.py` |
 | `test_canli_tazeleme.js` | Eskitilmiş kopya yayındaki `veri.json`'dan tazeleniyor mu (6 test, **ağa çıkar**; erişemezse kendini atlar) |
 
@@ -175,6 +175,34 @@ mobil veriyle açmak — kurum filtresini tamamen atlar.
 görüntüleyicisi sayfalara dosya indirtmiyor, orada ölü düğme olurdu.
 `site_yap.py` onu artifact kopyasından çıkarıyor; şablon değişip parça
 eşleşmezse yapı sessizce geçmiyor, HATA verip duruyor.
+
+## Elle oran ekleme
+
+Otomatik güncelleme tökezlerse kullanıcı o ayın oranını kendi girebiliyor
+(sol paneldeki "Elle oran ekle" bölümü). Girilen oran `localStorage`'da
+(`nafaka-elle-oranlar-v1`) saklanıyor.
+
+**Kural: RESMİ VERİ KAZANIR, ama elle girilen SİLİNMEZ.**
+`hesap.js` içindeki `elleBirlestir(veri, elle)` bunu yapıyor:
+- TÜİK verisi olmayan ay → elle girilen kullanılıyor, kayda `_elle: true` konuyor
+- TÜİK verisi olan ay → resmi oran kullanılıyor, elle girilen `gecersiz`
+  listesinde dönüyor ve ekranda "TÜİK verisi geldi, artık o kullanılıyor,
+  girdiğin duruyor, istersen sil" diye görünüyor
+
+Bu ayrım bilinçli: kullanıcının girdiği hiçbir şey kendiliğinden kaybolmasın
+ama eski bir tahmin de resmi rakamın önüne geçmesin. Silme kararı kullanıcının.
+
+Cetvelde elle girilen oran kesikli çerçeve + "elle girildi" notuyla işaretli;
+panoya kopyalanan metne de geçiyor — hangi rakamın resmi olmadığı hep belli.
+
+`localStorage` çalışmıyorsa (gizli sekme, site verisi kapalı tarayıcı) oran
+yine hesaba katılıyor ama "kaydedilemedi, sayfayı kapatınca kaybolur" deniyor.
+Bütün okuma/yazma `try/catch` içinde.
+
+**Tuzak:** Bir ayın oranı ancak **bir sonraki ayda yıl dönümü olan** dosyada
+kullanılır ("önceki ay" kuralı). Test yazarken buna dikkat — Ağustos oranını
+sınamak için başlangıç ayı Eylül olmalı, yoksa oran hiç sorgulanmaz ve test
+boşuna düşer (bu tuzağa düşüldü).
 
 ## Hesap kuralı
 
