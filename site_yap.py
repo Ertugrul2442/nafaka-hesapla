@@ -21,6 +21,7 @@ SABLON = os.path.join(KOK, "sablon.html")
 VERI = os.path.join(KOK, "veri", "endeksler.json")
 HESAP = os.path.join(KOK, "hesap.js")
 SITE = os.path.join(KOK, "docs", "index.html")
+SITE_VERI = os.path.join(KOK, "docs", "veri.json")
 ARTIFACT = os.path.join(KOK, "nafaka_artifact.html")
 
 ACIKLAMA = ("Mahkemenin belirlediği nafakayı TÜİK'in TÜFE veya Yİ-ÜFE oranıyla "
@@ -30,8 +31,9 @@ ACIKLAMA = ("Mahkemenin belirlediği nafakayı TÜİK'in TÜFE veya Yİ-ÜFE ora
 # Sablon degisirse bu diziler eslesmez ve yapi HATA verip durur - sessizce gecmez.
 INDIR_BAGLANTISI = ('        <a class="dugme" id="indir" href="index.html" '
                     'download="nafaka-cetveli.html">Bilgisayarına indir</a>\n')
-INDIR_NOTU = ('      <p class="not" id="indirNot">İndirdiğin dosya internetsiz de çalışır — '
-              'çift tıklaman yeterli.\n        Adliyede siteye erişemezsen bu işini görür.</p>\n')
+INDIR_NOTU = ('      <p class="not" id="indirNot">İndirdiğin dosya çift tıklamayla açılır ve '
+              'internetsiz de çalışır.\n        İnternete erişebildiği her açılışta veriyi buradan '
+              'kendi tazeler; erişemezse\n        içindeki veriyle devam eder ve eskidiğinde uyarır.</p>\n')
 
 # emoji favicon - ayri dosya gerektirmiyor
 FAVICON = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'"
@@ -80,6 +82,12 @@ def main():
     os.makedirs(os.path.dirname(SITE), exist_ok=True)
     io.open(SITE, "w", encoding="utf-8", newline="\n").write(belge(bas, govde))
 
+    # Veriyi sayfanin yaninda ayrica yayimliyoruz. Indirilen kopya bunu cekip
+    # kendini tazeliyor; boylece dosya bir aylik fotograf olarak kalmiyor.
+    # GitHub Pages "Access-Control-Allow-Origin: *" gonderdigi icin file:// ile
+    # acilan kopya da erisebiliyor (25.08.2026'da olculdu).
+    io.open(SITE_VERI, "w", encoding="utf-8", newline="\n").write(veri_js)
+
     # Artifact goruntuleyicisi sayfalara dosya indirtmiyor; oradaki kopyada
     # indirme baglantisi olu dugme olurdu, cikariyoruz. (Sayfa betigi bu
     # ogelerin yoklugunu zaten kaldiriyor - $("indir") null kontrollu.)
@@ -90,7 +98,8 @@ def main():
         artifact = artifact.replace(parca, "", 1)
     io.open(ARTIFACT, "w", encoding="utf-8", newline="\n").write(artifact)
 
-    for ad, yol in (("docs/index.html", SITE), ("nafaka_artifact.html", ARTIFACT)):
+    for ad, yol in (("docs/index.html", SITE), ("docs/veri.json", SITE_VERI),
+                    ("nafaka_artifact.html", ARTIFACT)):
         b = os.path.getsize(yol)
         print(f"yazıldı -> {ad}  ({b / 1024:.0f} KB)")
         if b > 16 * 1024 * 1024:

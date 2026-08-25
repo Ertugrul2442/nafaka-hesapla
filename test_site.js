@@ -31,11 +31,15 @@ function Ogesi(etiket) {
 
 const idler = ["form", "tutar", "basAy", "basYil", "bitAy", "bitYil", "kapsam",
                "oranNot", "ozet", "cetvelBaslik", "cetvelAlt", "govde",
-               "uyarilar", "kopyala", "yazdir", "kunye", "indir", "indirNot"];
+               "uyarilar", "kopyala", "yazdir", "kunye", "indir", "indirNot", "veriUyari"];
 
-/* Sayfayi bastan kurup calistirir. protokol "file:" verilirse sayfa,
-   bilgisayardan acilmis gibi davranmali (indirme baglantisi gizlenir). */
-function sayfayiKur(protokol) {
+/* Sayfayi bastan kurup calistirir.
+   protokol      : "https:" yayindaki sayfa gibi, "file:" indirilen dosya gibi
+   sec.bugun     : sahte tarih (veri eskime uyarisini sinamak icin)
+   sec.tazeVeri  : fetch'in donecegi veri; null verilirse istek basarisiz olur
+   sec.fetchYok  : true ise ortamda fetch hic yok (eski tarayici)             */
+function sayfayiKur(protokol, sec) {
+  sec = sec || {};
   const kayit = {};
   idler.forEach(id => { kayit[id] = Ogesi(id === "form" ? "form" : "div"); });
   kayit.tutar.value = "2000";
@@ -61,13 +65,34 @@ function sayfayiKur(protokol) {
   };
 
   const pano = {};
+  const cagri = { fetchUrl: null, fetchSayisi: 0 };
+
+  // gercek Date gibi davranan ama "bugun"u sabitlenmis sinif
+  let SahteDate = Date;
+  if (sec.bugun) {
+    SahteDate = class extends Date {
+      constructor(...a) { if (a.length === 0) super(sec.bugun.getTime()); else super(...a); }
+    };
+  }
+
   const window = {
     document,
     location: { protocol: protokol },
     navigator: { clipboard: { writeText(t) { pano.metin = t; return Promise.resolve(); } } },
     print() { pano.yazdirildi = true; },
-    Intl, setTimeout
+    Intl, setTimeout, clearTimeout, Date: SahteDate,
+    AbortController: class { constructor() { this.signal = {}; } abort() {} },
+    Promise
   };
+  if (!sec.fetchYok) {
+    window.fetch = (url) => {
+      cagri.fetchUrl = url; cagri.fetchSayisi++;
+      if (sec.tazeVeri === undefined || sec.tazeVeri === null) {
+        return Promise.reject(new Error("ag yok"));
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve(sec.tazeVeri) });
+    };
+  }
   window.window = window;
 
   const baglam = vm.createContext(window);
@@ -77,8 +102,11 @@ function sayfayiKur(protokol) {
     try { vm.runInContext(b, baglam); }
     catch (e) { throw new Error("gomulu betik #" + (i + 1) + " patladi: " + e.message); }
   });
-  return { kayit, radyolar, tumRadyolar, pano, window };
+  return { kayit, radyolar, tumRadyolar, pano, window, cagri };
 }
+
+/* fetch zinciri mikro gorevlerde cozuluyor; olcmeden once bosaltalim */
+const bekle = () => new Promise(r => setImmediate(() => setImmediate(r)));
 
 /* --- sayfayi yayindaki gibi (https) kur ------------------------------- */
 const kurulum = sayfayiKur("https:");
@@ -143,11 +171,15 @@ console.log("\n--- internetsiz kullanim (engelli agda ise yarayacak kisim) ---")
 kontrol("indirme baglantisi var", /id="indir"[^>]*download=/.test(html));
 kontrol("yayindayken indirme baglantisi gorunur", kayit.indir.style.display !== "none");
 
+// Disa giden her istek ISTEGE BAGLI olmali: Google Fonts gelmezse sistem yazi
+// tipine duser, kendi sitemize ulasilamazsa gomulu veriyle devam eder.
+// Listede baska bir host cikarsa sayfa engelli agda kirilabilir demektir.
+const izinli = ["fonts.googleapis.com", "fonts.gstatic.com", "ertugrul2442.github.io"];
 const disHostlar = [...new Set([...html.matchAll(/https?:\/\/([a-z0-9.-]+)/g)].map(m => m[1]))]
   .filter(h => !h.includes("w3.org"));
-kontrol("disa giden tek bagimlilik Google Fonts",
-        disHostlar.every(h => h.startsWith("fonts.g")), disHostlar.join(", "));
-console.log("       dis host: " + disHostlar.join(", "));
+kontrol("disa giden host sayisi denetimde",
+        disHostlar.every(h => izinli.includes(h)), disHostlar.join(", "));
+console.log("       dis host: " + disHostlar.join(", ") + "  (hepsi istege bagli)");
 
 kontrol("web fontu gelmezse Windows karsiligi var",
         /--yazi-sayi:"IBM Plex Mono",Consolas/.test(html) &&
@@ -186,6 +218,103 @@ kontrol("body zemini jetondan", /body\{[^}]*background:var\(--kagit\)/.test(stil
 const uc = (stil.match(/--aksan-uzeri:/g) || []).length;
 kontrol("aksan-uzeri her uc temada tanimli", uc === 3, "bulunan " + uc);
 
-console.log("\n===============================");
-console.log(gecen + " gecti, " + kalan + " kaldi");
-process.exit(kalan ? 1 : 0);
+/* ---- indirilen dosya bir aylik fotograf olarak kalmasin ---- */
+(async function () {
+  const V = window.ENDEKS_VERISI;
+  const sonAy = V.seriler.TUFE.son_ay;
+
+  console.log("\n--- veri tazeligi: ekranda hangisi kullanildigi yaziyor mu ---");
+  const agsiz = sayfayiKur("file:");                 // fetch reddediliyor
+  await bekle();
+  kontrol("ag yokken gomulu veri yaziyor",
+          agsiz.kayit.kapsam.innerHTML.includes("dosyaya gömülü veri"),
+          agsiz.kayit.kapsam.innerHTML.slice(-90));
+  kontrol("ag yokken cetvel yine de uretiliyor",
+          (agsiz.kayit.govde.innerHTML.match(/<tr/g) || []).length >= 6);
+  kontrol("ag yokken tazeleme adresi dogru",
+          agsiz.cagri.fetchUrl === "https://ertugrul2442.github.io/nafaka-hesapla/veri.json",
+          String(agsiz.cagri.fetchUrl));
+
+  console.log("\n--- siteden taze veri gelince kendini gunceller mi ---");
+  const taze = JSON.parse(JSON.stringify(V));
+  const yeniAy = "2026-08";
+  ["TUFE", "UFE"].forEach(k => {
+    taze.seriler[k].aylik[yeniAy] = { endeks: 140, yillik: 30, ort12: 31 };
+    taze.seriler[k].son_ay = yeniAy;
+  });
+  const guncel = sayfayiKur("file:", { tazeVeri: taze });
+  await bekle();
+  kontrol("tazelendigi ekranda yaziyor",
+          guncel.kayit.kapsam.innerHTML.includes("siteden tazelendi"),
+          guncel.kayit.kapsam.innerHTML.slice(-90));
+  kontrol("kapsam yeni aya guncellendi",
+          guncel.kayit.kapsam.innerHTML.includes("Ağustos 2026"),
+          guncel.kayit.kapsam.innerHTML.slice(-140));
+  const H2 = window.NafakaHesap;
+  const bek = H2.hesapla(taze, {
+    endeks: "TUFE", oranTuru: "ort12", referans: "onceki",
+    baslangicYil: 2020, baslangicAy: 1, baslangicTutar: 2000,
+    bitisYil: +guncel.kayit.bitYil.value, bitisAy: +guncel.kayit.bitAy.value
+  });
+  const bekBicim = bicim.format(bek.satirlar[bek.satirlar.length - 1].aylikTutar);
+  kontrol("cetvel taze veriyle yeniden hesaplandi",
+          guncel.kayit.govde.innerHTML.includes(bekBicim), "aranan " + bekBicim);
+
+  console.log("\n--- bozuk/eski cevap gelirse gomulu veriye zarar vermemeli ---");
+  const bozuk = sayfayiKur("file:", { tazeVeri: { seriler: { TUFE: {} } } });
+  await bekle();
+  kontrol("bozuk cevap yok sayildi",
+          bozuk.kayit.kapsam.innerHTML.includes("dosyaya gömülü veri"));
+  kontrol("bozuk cevaba ragmen cetvel duruyor",
+          (bozuk.kayit.govde.innerHTML.match(/<tr/g) || []).length >= 6);
+
+  const geriVeri = JSON.parse(JSON.stringify(V));
+  geriVeri.seriler.TUFE.son_ay = "2020-01";
+  const geri = sayfayiKur("file:", { tazeVeri: geriVeri });
+  await bekle();
+  kontrol("daha eski cevap kabul edilmedi",
+          geri.kayit.kapsam.innerHTML.includes("dosyaya gömülü veri"));
+
+  const eskiTarayici = sayfayiKur("file:", { fetchYok: true });
+  await bekle();
+  kontrol("fetch olmayan tarayicida sayfa yine calisiyor",
+          (eskiTarayici.kayit.govde.innerHTML.match(/<tr/g) || []).length >= 6);
+
+  console.log("\n--- veri eskiyince yuksek sesle uyariyor mu ---");
+  const bugun = sayfayiKur("file:", { bugun: new Date(2026, 7, 25) });
+  await bekle();
+  kontrol("taze veride uyari yok", bugun.kayit.veriUyari.innerHTML === "",
+          bugun.kayit.veriUyari.innerHTML.slice(0, 100));
+
+  const eskimis = sayfayiKur("file:", { bugun: new Date(2027, 2, 20) });
+  await bekle();
+  kontrol("aylar sonra acilinca UYARI cikiyor",
+          eskimis.kayit.veriUyari.innerHTML.includes("eskimiş"),
+          eskimis.kayit.veriUyari.innerHTML.slice(0, 120));
+  kontrol("uyari guncel adresi veriyor",
+          eskimis.kayit.veriUyari.innerHTML.includes("ertugrul2442.github.io/nafaka-hesapla"));
+  kontrol("uyari hangi aya kadar dogru oldugunu soyluyor",
+          eskimis.kayit.veriUyari.innerHTML.includes("Temmuz 2026"),
+          eskimis.kayit.veriUyari.innerHTML.slice(0, 160));
+  kontrol("eskimis olsa da cetvel yine uretiliyor",
+          (eskimis.kayit.govde.innerHTML.match(/<tr/g) || []).length >= 6);
+
+  const eskiAmaTazelendi = sayfayiKur("file:", { bugun: new Date(2027, 2, 20), tazeVeri: taze });
+  await bekle();
+  kontrol("tazelendikten sonra da uyari duruyorsa dogru duruyor (2026-08 hala eski)",
+          eskiAmaTazelendi.kayit.veriUyari.innerHTML.includes("Ağustos 2026"),
+          eskiAmaTazelendi.kayit.veriUyari.innerHTML.slice(0, 160));
+
+  console.log("\n--- yayimlanan veri dosyasi ---");
+  const veriYolu = path.join(path.dirname(dosya), "veri.json");
+  kontrol("docs/veri.json uretilmis", fs.existsSync(veriYolu));
+  if (fs.existsSync(veriYolu)) {
+    const vj = JSON.parse(fs.readFileSync(veriYolu, "utf8"));
+    kontrol("veri.json ile sayfadaki veri ayni ay",
+            vj.seriler.TUFE.son_ay === sonAy, vj.seriler.TUFE.son_ay + " vs " + sonAy);
+  }
+
+  console.log("\n===============================");
+  console.log(gecen + " gecti, " + kalan + " kaldi");
+  process.exit(kalan ? 1 : 0);
+})();

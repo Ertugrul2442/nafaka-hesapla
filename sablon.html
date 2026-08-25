@@ -195,6 +195,21 @@ th:first-child,td:first-child{text-align:left}
 tbody tr.sonDonem td{background:var(--aksan-yumusak)}
 tbody tr.sonDonem .tutar{color:var(--aksan)}
 
+/* ---------- veri tazeligi ---------- */
+#veriUyari:not(:empty){margin-top:20px}
+.eski{
+  display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;
+  background:var(--uyari-zemin);border:1px solid var(--uyari-cizgi);color:var(--uyari);
+  border-radius:4px;padding:13px 15px;font-size:14px;line-height:1.5;text-wrap:pretty;
+}
+.eski b{font-weight:700}
+.eski a{color:inherit;font-weight:600}
+.tazelik{
+  font-family:var(--yazi-sayi);font-size:11px;letter-spacing:.03em;
+  color:var(--ara);margin-top:7px;display:block;
+}
+.tazelik.tazelendi{color:var(--aksan)}
+
 /* ---------- uyari ---------- */
 .uyari{
   display:flex;gap:10px;background:var(--uyari-zemin);border:1px solid var(--uyari-cizgi);
@@ -250,6 +265,8 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
     </div>
     <div class="kapsam" id="kapsam"></div>
   </header>
+
+  <div id="veriUyari"></div>
 
   <div class="govde">
 
@@ -335,15 +352,16 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
         <button type="button" id="yazdir">Yazdır / PDF</button>
         <a class="dugme" id="indir" href="index.html" download="nafaka-cetveli.html">Bilgisayarına indir</a>
       </div>
-      <p class="not" id="indirNot">İndirdiğin dosya internetsiz de çalışır — çift tıklaman yeterli.
-        Adliyede siteye erişemezsen bu işini görür.</p>
+      <p class="not" id="indirNot">İndirdiğin dosya çift tıklamayla açılır ve internetsiz de çalışır.
+        İnternete erişebildiği her açılışta veriyi buradan kendi tazeler; erişemezse
+        içindeki veriyle devam eder ve eskidiğinde uyarır.</p>
     </main>
   </div>
 
   <footer class="dip">
     <p><strong>Veri kaynağı.</strong> TÜİK Veri Portalı, resmî aylık fiyat endeksi serileri. TÜİK yeni ayı her ayın 3'ünde yayımlıyor; bu sayfa onu kendiliğinden alıp güncelliyor. <span id="kunye" class="kunye"></span></p>
     <p><strong>“On iki aylık ortalama” ne demek.</strong> Son 12 ayın endeks ortalamasının, ondan önceki 12 ayın ortalamasına göre değişimi. Tek bir ayın sıçramasından az etkilendiği için nafaka kararlarında en sık bu ölçü geçer. “Yıllık” ise yalnız o ayın, geçen yılın aynı ayına göre değişimidir.</p>
-    <p><strong>İnternetsiz kullanım.</strong> Sayfanın tamamı tek dosya: veri de hesap da içinde. “Bilgisayarına indir” dedikten sonra dosyayı çift tıklayarak internetsiz açabilir, USB'yle taşıyabilir, e-postayla gönderebilirsin.</p>
+    <p><strong>İnternetsiz kullanım ve güncel kalma.</strong> Sayfanın tamamı tek dosya: veri de hesap da içinde. İndirdiğin dosyayı çift tıklayarak açabilir, USB'yle taşıyabilir, e-postayla gönderebilirsin. Dosya her açılışta veriyi bu siteden tazelemeye çalışır — internet varsa kendini günceller, yoksa içindeki veriyle çalışır ve veri eskidiğinde en üstte uyarı çıkarır. Yani bir kez indirdiğin dosyayı tekrar tekrar indirmen gerekmez.</p>
     <p><strong>Bu bir hesap makinesidir, hukuki görüş değildir.</strong> Kararındaki artış maddesinin lafzı — hangi endeks, hangi oran, hangi tarih — sonucu değiştirir. Kararı okuyup seçenekleri ona göre ayarla.</p>
   </footer>
 </div>
@@ -354,6 +372,9 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
 (function(){
   "use strict";
   var H = window.NafakaHesap, VERI = window.ENDEKS_VERISI;
+  var ADRES = "https://ertugrul2442.github.io/nafaka-hesapla/";
+  var VERI_ADRES = ADRES + "veri.json";
+  var tazelendi = false;
   var $ = function(id){ return document.getElementById(id); };
   var bicimPara = new Intl.NumberFormat("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2});
   var bicimOran = new Intl.NumberFormat("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -379,8 +400,45 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
     var ui = H.ayCoz(u.ilk_ay), us = H.ayCoz(u.son_ay);
     $("kapsam").innerHTML =
       "<b>TÜFE</b>" + H.ayEtiket(ti.yil,ti.ay) + " – " + H.ayEtiket(ts.yil,ts.ay) +
-      "<b style='margin-top:6px'>Yİ-ÜFE</b>" + H.ayEtiket(ui.yil,ui.ay) + " – " + H.ayEtiket(us.yil,us.ay);
+      "<b style='margin-top:6px'>Yİ-ÜFE</b>" + H.ayEtiket(ui.yil,ui.ay) + " – " + H.ayEtiket(us.yil,us.ay) +
+      '<span class="tazelik' + (tazelendi ? ' tazelendi' : '') + '">' +
+      (tazelendi ? "siteden tazelendi" : "dosyaya gömülü veri") + "</span>";
     $("kunye").textContent = "Veri " + VERI.cekilme_tarihi.slice(0,10) + " tarihinde çekildi.";
+  }
+
+  /* Veri eskimisse yuksek sesle soyle - sessizce eski rakamla hesap yaptirma. */
+  function eskilikUyarisi(){
+    var d = H.veriGerideMi(VERI.seriler.TUFE.son_ay, new Date());
+    if (!d.eskimis) { $("veriUyari").innerHTML = ""; return; }
+    var s = H.ayCoz(VERI.seriler.TUFE.son_ay);
+    $("veriUyari").innerHTML =
+      '<div class="eski"><b>Bu dosyadaki veri eskimiş.</b><span>' +
+      'İçinde en son ' + H.ayEtiket(s.yil, s.ay) + ' verisi var; TÜİK o tarihten sonra ' +
+      'yeni ay yayımladı. Buraya kadarki hesap doğru, sonrası için güncel sürümü aç: ' +
+      '<a href="' + ADRES + '">' + ADRES.replace("https://", "") + '</a>' +
+      '</span></div>';
+  }
+
+  /* Indirilen dosya bir aylik fotograf olarak kalmasin: internet varsa veriyi
+     siteden tazeler, yoksa gomulu veriyle devam eder. Hangisinin kullanildigi
+     ekranda yaziyor - sessizce gecmiyor. */
+  function veriyiTazele(){
+    if (typeof fetch !== "function" || typeof AbortController !== "function") return;
+    var iptal = new AbortController();
+    var saat = setTimeout(function(){ iptal.abort(); }, 5000);
+    fetch(VERI_ADRES, { signal: iptal.signal, cache: "no-cache" })
+      .then(function(y){ return y.ok ? y.json() : null; })
+      .then(function(taze){
+        clearTimeout(saat);
+        if (!taze || !taze.seriler || !taze.seriler.TUFE || !taze.seriler.TUFE.aylik) return;
+        if (!(taze.seriler.TUFE.son_ay > VERI.seriler.TUFE.son_ay)) return;  // daha yeni degil
+        VERI = taze;
+        tazelendi = true;
+        kunyeYaz();
+        eskilikUyarisi();
+        tazele();
+      })
+      .catch(function(){ clearTimeout(saat); /* internet yok - gomulu veriyle devam */ });
   }
 
   function tazele(){
@@ -477,6 +535,8 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
   $("form").addEventListener("submit", function(e){ e.preventDefault(); });
 
   kunyeYaz();
+  eskilikUyarisi();
   tazele();
+  veriyiTazele();   // internet varsa veriyi siteden gunceller, yoksa sessizce vazgecer
 })();
 </script>

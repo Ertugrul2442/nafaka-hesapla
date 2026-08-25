@@ -21,6 +21,17 @@ esit("ayEkle 12 ay", JSON.stringify(H.ayEkle(2020, 6, 12)), JSON.stringify({ yil
 esit("ayFarki", H.ayFarki({ yil: 2020, ay: 1 }, { yil: 2021, ay: 1 }), 12);
 esit("ayKodu dolgu", H.ayKodu(2024, 3), "2024-03");
 
+console.log("\n--- veriGerideMi: indirilen dosya eskidiyse anlasilmali ---");
+const gm = (sonAy, y, m, d) => H.veriGerideMi(sonAy, new Date(y, m - 1, d));
+esit("temmuz verisi, 25 agustos -> 1 ay geride, taze", gm("2026-07", 2026, 8, 25).eskimis, false);
+esit("temmuz verisi, 2 eylul -> henuz yayim gunu gelmedi, taze", gm("2026-07", 2026, 9, 2).eskimis, false);
+esit("temmuz verisi, 20 eylul -> ESKIMIS", gm("2026-07", 2026, 9, 20).eskimis, true);
+esit("temmuz verisi, 20 eylul -> 2 ay geride", gm("2026-07", 2026, 9, 20).geride, 2);
+esit("temmuz verisi, 15 aralik -> ESKIMIS", gm("2026-07", 2026, 12, 15).eskimis, true);
+esit("temmuz verisi, 15 aralik -> 5 ay geride", gm("2026-07", 2026, 12, 15).geride, 5);
+esit("aralik verisi, ocak -> yil sinirinda dogru", gm("2025-12", 2026, 1, 20).geride, 1);
+esit("aralik verisi, subat -> yil sinirinda ESKIMIS", gm("2025-12", 2026, 2, 20).eskimis, true);
+
 console.log("\n--- elle dogrulanmis senaryo: Ocak 2022 baslangic, 1000 TL, TUFE 12 aylik ort ---");
 // Referans "onceki" oldugu icin Ocak yildonumlerinde bir onceki Aralik ayinin orani kullanilir.
 const ar = k => veri.seriler.TUFE.aylik[k].ort12;

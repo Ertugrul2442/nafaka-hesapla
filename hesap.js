@@ -116,10 +116,19 @@
     return { satirlar: satirlar, uyarilar: uyarilar, toplam: toplam, toplamAy: toplamAy };
   }
 
+  /* Elimizdeki veri kac ay geride?  TUIK, M ayinin verisini M+1'in 3'unde
+     yayimliyor; yani ayin 8'inden sonra son ay, bir onceki ay olmali.
+     0 veya 1 normal. 2 ve ustu, ayin 8'inden sonraysa veri eskimis demektir. */
+  function veriGerideMi(sonAyKodu, bugun) {
+    var d = ayCoz(sonAyKodu);
+    var geride = (bugun.getFullYear() * 12 + (bugun.getMonth() + 1)) - (d.yil * 12 + d.ay);
+    return { geride: geride, eskimis: geride >= 2 && bugun.getDate() > 8 };
+  }
+
   var disa = {
     hesapla: hesapla,
     ayKodu: ayKodu, ayCoz: ayCoz, ayEkle: ayEkle,
-    ayFarki: ayFarki, ayEtiket: ayEtiket, AY_ADI: AY_ADI
+    ayFarki: ayFarki, ayEtiket: ayEtiket, veriGerideMi: veriGerideMi, AY_ADI: AY_ADI
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = disa;
