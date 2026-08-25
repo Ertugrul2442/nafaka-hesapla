@@ -37,12 +37,13 @@ Bu yüzden:
 | `veri_cek.py` | TÜFE + Yİ-ÜFE serilerini çeker, **güvenlik kontrollerinden geçirir**, `veri/endeksler.json`'a yazar. |
 | `hesap.js` | Saf hesap motoru. DOM'a dokunmaz, node ile de çalışır. |
 | `sablon.html` | Sayfanın kaynağı (CSS + HTML + arayüz betiği, veri yer tutucusuyla). |
-| `site_yap.py` | Şablon + veri + `hesap.js` → `docs/index.html` ve `nafaka_artifact.html`. |
+| `site_yap.py` | Şablon + veri + `hesap.js` → `docs/index.html`, `docs/veri.json` ve `nafaka_artifact.html`. |
 | `docs/index.html` | **Üretilen dosya, elle düzenleme.** GitHub Pages bunu yayınlıyor. |
 | `.github/workflows/veri-guncelle.yml` | Aylık otomatik güncelleme. |
-| `test_hesap.js` | Hesap motoru (28 test) — `node test_hesap.js` |
-| `test_site.js` | Yayına giden sayfa (30 test) — `node test_site.js [dosya]` |
+| `test_hesap.js` | Hesap motoru (36 test) — `node test_hesap.js` |
+| `test_site.js` | Yayına giden sayfa (60 test) — `node test_site.js [dosya]` |
 | `test_veri.py` | Veri güvenlik kontrolleri (15 test) — `py -3.13 test_veri.py` |
+| `test_canli_tazeleme.js` | Eskitilmiş kopya yayındaki `veri.json`'dan tazeleniyor mu (6 test, **ağa çıkar**; erişemezse kendini atlar) |
 
 `test_site.js` argüman alabiliyor: canlı sayfayı indirip `node test_site.js canli.html`
 ile sınayabilirsin.
@@ -132,6 +133,28 @@ Pages kurumsal/kamu ağlarında "kullanıcı içeriği" ya da "proxy" kategorisi
 engellenebiliyor. **Kesin cevap tek yoldan gelir: adliyedeki bir makinede
 adresi açmak.** Kullanıcıya soruldu, cevap gelince buraya yazılmalı.
 
+### İndirilen dosya nasıl güncel kalıyor
+
+Kullanıcı iki gerçek deliği yakaladı (25.08.2026) ve ikisi de kapatıldı:
+
+1. *"Site açılmıyorsa dosyayı nasıl indirecek?"* — İndirme, siteye erişilebilen
+   bir yerde (ev, büro, telefon) bir kez yapılır. Dağıtımı Ertuğrul da yapabilir:
+   dosya 75 KB, e-postayla gider.
+2. *"İndirdiği dosya bir ay sonra eskimez mi?"* — Eskimiyor. `docs/veri.json`
+   sayfanın yanında ayrıca yayımlanıyor; sayfa **her açılışta** oradan taze veri
+   çekmeye çalışıyor (5 sn zaman aşımı). GitHub Pages
+   `Access-Control-Allow-Origin: *` gönderdiği için `file://` ile açılan kopya da
+   erişebiliyor — ölçüldü. İnternet yoksa gömülü veriyle devam ediyor.
+
+Hangi verinin kullanıldığı **ekranda yazıyor**: "dosyaya gömülü veri" /
+"siteden tazelendi". Veri gerçekten eskimişse en üstte uyarı çıkıp güncel adresi
+veriyor. Bozuk ya da daha eski cevap gelirse yok sayılıyor.
+
+**Yakalanan hata:** ilk sürümde veri tazeleniyordu ama bitiş tarihi eski ayda
+kalıyordu — yani yeni ay çekiliyor, cetvele hiç girmiyordu. `bitisiIlerlet()`
+eklendi: kullanıcı o alana dokunmadıysa bitiş tarihi yeni aya ilerliyor,
+dokunduysa seçimi korunuyor. Bunu `test_canli_tazeleme.js` buldu.
+
 Cevabı beklemeden risk düşürüldü:
 - Sayfa **tek dosya** — veri de hesap da gömülü. Ölçüldü: yerel bağımlılık yok,
   dışa giden tek istek Google Fonts.
@@ -140,8 +163,8 @@ Cevabı beklemeden risk düşürüldü:
 - **Yazı tipi yığınları jetonda** (`--yazi-baslik/govde/sayi`). Google Fonts de
   engellenirse Windows'un Georgia / Segoe UI / Consolas'ı devreye giriyor.
   Eskiden jenerik `monospace` vardı, Times New Roman'a düşüyordu.
-- `test_site.js` sayfayı hem `https:` hem `file:` protokolüyle kurup sınıyor
-  ve dışa giden bağımlılık listesini ölçüyor (39 test).
+- `test_site.js` sayfayı hem `https:` hem `file:` protokolüyle, sahte tarihle ve
+  sahte ağ cevaplarıyla kurup sınıyor; dışa giden bağımlılık listesini de ölçüyor.
 
 **Engelliyse seçenekler:** (a) kendi alan adı — düz bir `.com`, bilinen bir
 kullanıcı-içeriği alanı olmadığı için kategoriye takılma ihtimali çok daha

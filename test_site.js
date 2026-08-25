@@ -323,12 +323,17 @@ kontrol("aksan-uzeri her uc temada tanimli", uc === 3, "bulunan " + uc);
           eskiAmaTazelendi.kayit.veriUyari.innerHTML.slice(0, 160));
 
   console.log("\n--- yayimlanan veri dosyasi ---");
-  const veriYolu = path.join(path.dirname(dosya), "veri.json");
+  // Bu kontrol depodaki yapiyla ilgili; disaridan bir dosya sinaniyorsa atlanir.
+  const veriYolu = path.join(kok, "docs", "veri.json");
   kontrol("docs/veri.json uretilmis", fs.existsSync(veriYolu));
   if (fs.existsSync(veriYolu)) {
     const vj = JSON.parse(fs.readFileSync(veriYolu, "utf8"));
-    kontrol("veri.json ile sayfadaki veri ayni ay",
-            vj.seriler.TUFE.son_ay === sonAy, vj.seriler.TUFE.son_ay + " vs " + sonAy);
+    if (dosya === path.join(kok, "docs", "index.html")) {
+      kontrol("veri.json ile sayfadaki veri ayni ay",
+              vj.seriler.TUFE.son_ay === sonAy, vj.seriler.TUFE.son_ay + " vs " + sonAy);
+    } else {
+      console.log("  bilgi  dış dosya sınanıyor, veri.json karşılaştırması atlandı");
+    }
   }
 
   console.log("\n===============================");
