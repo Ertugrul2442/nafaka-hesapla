@@ -8,10 +8,28 @@ gözetimsiz çalışması ve kendini güncellemesi şart.
 **Depo:** https://github.com/Ertugrul2442/nafaka-hesapla (herkese açık)
 **Claude artifact kopyası:** https://claude.ai/code/artifact/43dcbd79-3369-4582-b346-e7e72b5c398b
 
-## Durum (25.08.2026)
+## Durum (25.08.2026 akşamı)
 
 Çalışıyor ve uçtan uca kanıtlandı. Veri TÜİK'ten çekiliyor, sayfa kuruluyor,
 GitHub Pages yayınlıyor, aylık otomatik güncelleme iki yolda da prova edildi.
+211 test geçiyor (56 motor + 105 sayfa + 21 veri + 23 teşhis + 6 canlı ağ).
+
+### ⏭ SIRADAKİ İŞ — 26.08.2026 sabahı
+
+Ertuğrul adliyeye gidip **ölçüm yapacak**. Masaüstünde hazır iki dosya var:
+`Nafaka-Cetveli.html` ve `Baglanti-Kontrolu.html`.
+
+Yapacağı: önce `ertugrul2442.github.io/nafaka-hesapla` adresini açmayı denemek,
+açılmazsa `Baglanti-Kontrolu.html`'i çalıştırıp sonucu getirmek.
+
+**Sonuç gelince yapılacaklar:**
+- Açıldıysa → hiçbir şey. Link dağıtılır, "Engelli ağ" bölümündeki açık soru
+  kapatılır.
+- Açılmadıysa → (a) kendi alan adı önerilir (yılda 10-15 dolar, düz `.com`
+  kategori filtresine `github.io` kadar takılmaz), ya da (b) dosya doğrudan
+  dağıtılır — ikisi de bugün çalışır durumda.
+- "Ayar saklama ×" çıktıysa → ayarları dosyanın içine gömen plan B gündeme
+  gelir (bkz. "Engelli ağ" bölümü). Ertuğrul'un kendi makinesinde ✓ çıktı.
 
 **Maliyet: 0 TL.** Sunucu yok, veritabanı yok, Supabase yok. Sayfa tamamen
 istemci tarafında çalışıyor; tek "arka uç" ayda bir çalışan GitHub Actions işi.
@@ -303,6 +321,10 @@ Doğrulanmış örnek: Ocak 2022'de 1.000 ₺, TÜFE 12 aylık ortalama, önceki
 → 1.000 × 1,7231 × 1,5386 × 1,5851 × 1,3488 = **5.668,14 ₺** (2026 dönemi).
 
 ## Sıradaki işler (yapılmadı, sorulmalı)
+
+- **Dosya kaydetme:** bir kişi birden çok nafaka dosyasıyla çalışıyorsa tutar
+  ve tarihi her seferinde yeniden yazıyor. Kullanıcıya soruldu, "adamlar
+  kullanmaya başlasın, sıkıntı olursa" denildi — **kendiliğinden yapma**.
 
 - Birikmiş nafaka alacağı için yasal faiz hesabı.
 - Karar metninden tarih/tutar okuyup formu otomatik doldurma.
