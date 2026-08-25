@@ -146,6 +146,35 @@ def topla():
     return cikti
 
 
+def elle_koru(yeni, eski):
+    """Elle eklenmis aylari (oran_ekle.py) yeni cekimde kaybetmez.
+
+    Kural, tarayicidakiyle ayni: RESMI VERI KAZANIR. TUIK o ayi artik veriyorsa
+    elle eklenen dusuyor; hala vermiyorsa duruyor. Boylece bir sonraki cekim
+    ne elle konulani siliyor ne de 'ay sayisi azaldi' diye yanlis alarm veriyor.
+    """
+    if not eski:
+        return
+    for kod, s in yeni.get("seriler", {}).items():
+        e = eski.get("seriler", {}).get(kod)
+        if not e:
+            continue
+        korunan = []
+        for ay, d in e["aylik"].items():
+            if d.get("_elle") and ay not in s["aylik"]:
+                s["aylik"][ay] = d
+                korunan.append(ay)
+        if korunan:
+            sirali = sorted(s["aylik"])
+            s["aylik"] = {k: s["aylik"][k] for k in sirali}
+            s["ilk_ay"], s["son_ay"] = sirali[0], sirali[-1]
+            print(f"  . {kod}: elle eklenen {len(korunan)} ay korundu ({', '.join(korunan)})")
+        dusen = [ay for ay, d in e["aylik"].items() if d.get("_elle") and ay in s["aylik"]
+                 and not s["aylik"][ay].get("_elle")]
+        if dusen:
+            print(f"  . {kod}: TÜİK artık veriyor, elle eklenen düştü ({', '.join(dusen)})")
+
+
 def guvenlik_kontrolu(yeni, eski):
     """Yeni veriyi yazmadan once inceler. Sorun listesi doner; bos ise temiz."""
     sorun = []
@@ -186,6 +215,10 @@ def guvenlik_kontrolu(yeni, eski):
         for a, ed in e["aylik"].items():
             yd = aylik.get(a)
             if not yd or ed.get("ort12") is None or yd.get("ort12") is None:
+                continue
+            # Elle eklenen bir ayin TUIK degeriyle degismesi beklenen seydir,
+            # alarm sebebi degil.
+            if ed.get("_elle"):
                 continue
             if abs(yd["ort12"] - ed["ort12"]) > GECMIS_SAPMA:
                 degisen.append((a, ed["ort12"], yd["ort12"]))
@@ -247,6 +280,7 @@ def main():
         print("Eski veri olduğu gibi duruyor, hiçbir şey yazılmadı.", file=sys.stderr)
         return 1
 
+    elle_koru(yeni, eski)
     sorunlar = guvenlik_kontrolu(yeni, eski)
     if sorunlar:
         print("GÜVENLİK KONTROLÜ TAKILDI:", file=sys.stderr)

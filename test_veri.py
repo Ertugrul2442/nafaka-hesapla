@@ -116,6 +116,45 @@ for a in sorted(ufak["seriler"]["TUFE"]["aylik"])[:2]:
     ufak["seriler"]["TUFE"]["aylik"][a]["ort12"] = 41.9   # 1.9 puan sapma, 2 ay
 kontrol("2 aylik revizyon gecirildi", V.guvenlik_kontrolu(ufak, eski) == [])
 
+print("\n--- elle eklenen ay (oran_ekle.py) sonraki cekimde ne oluyor ---")
+# oran_ekle.py ile Agustos konuldu; TUIK hala vermiyor
+eskiElle = copy.deepcopy(eski)
+sonAy = sorted(eskiElle["seriler"]["TUFE"]["aylik"])[-1]
+y, a = int(sonAy[:4]), int(sonAy[5:7])
+a += 1
+if a == 13:
+    a, y = 1, y + 1
+elleAy = f"{y}-{a:02d}"
+for kod in ("TUFE", "UFE"):
+    eskiElle["seriler"][kod]["aylik"][elleAy] = {"ort12": 31.2, "yillik": 30.5, "_elle": True}
+    eskiElle["seriler"][kod]["son_ay"] = elleAy
+
+# TUIK hala eski ayda: yeni cekim elleAy'i icermiyor
+tuikGeride = veri_uret()
+V.elle_koru(tuikGeride, eskiElle)
+kontrol("TÜİK hâlâ vermiyorsa elle eklenen korundu",
+        tuikGeride["seriler"]["TUFE"]["aylik"].get(elleAy, {}).get("ort12") == 31.2)
+kontrol("son_ay elle eklenen aya ayarlandi",
+        tuikGeride["seriler"]["TUFE"]["son_ay"] == elleAy,
+        tuikGeride["seriler"]["TUFE"]["son_ay"])
+kontrol("korundugu icin 'ay sayisi azaldi' alarmi yok",
+        not any("azaldı" in x for x in V.guvenlik_kontrolu(tuikGeride, eskiElle)),
+        str(V.guvenlik_kontrolu(tuikGeride, eskiElle)))
+
+# TUIK o ayi artik veriyor ve degeri farkli: resmi kazanmali, alarm calmamali
+tuikVerdi = veri_uret()
+for kod in ("TUFE", "UFE"):
+    tuikVerdi["seriler"][kod]["aylik"][elleAy] = {"endeks": 150.0, "ort12": 28.4, "yillik": 27.9}
+    tuikVerdi["seriler"][kod]["son_ay"] = elleAy
+V.elle_koru(tuikVerdi, eskiElle)
+kontrol("TÜİK verince resmi deger kazandi",
+        tuikVerdi["seriler"]["TUFE"]["aylik"][elleAy]["ort12"] == 28.4)
+kontrol("resmi degerde _elle isareti kalmadi",
+        "_elle" not in tuikVerdi["seriler"]["TUFE"]["aylik"][elleAy])
+s = V.guvenlik_kontrolu(tuikVerdi, eskiElle)
+kontrol("31.2 -> 28.4 degisimi yanlis alarm uretmedi",
+        not any("eski ayın oranı değişmiş" in x for x in s), str(s))
+
 print("\n--- bayatlik_kontrolu ---")
 taze = veri_uret()
 taze["seriler"]["TUFE"]["son_ay"] = "2026-07"

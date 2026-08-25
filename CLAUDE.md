@@ -39,10 +39,11 @@ Bu yüzden:
 | `sablon.html` | Sayfanın kaynağı (CSS + HTML + arayüz betiği, veri yer tutucusuyla). |
 | `site_yap.py` | Şablon + veri + `hesap.js` → `docs/index.html`, `docs/veri.json` ve `nafaka_artifact.html`. |
 | `docs/index.html` | **Üretilen dosya, elle düzenleme.** GitHub Pages bunu yayınlıyor. |
+| `oran_ekle.py` | Bir ayın oranını veri dosyasına elle ekler — **herkese ulaşsın diye**. Otomatik çekim tökezlerse kurtarma aracı. |
 | `.github/workflows/veri-guncelle.yml` | Aylık otomatik güncelleme. |
 | `test_hesap.js` | Hesap motoru (56 test) — `node test_hesap.js` |
 | `test_site.js` | Yayına giden sayfa (105 test) — `node test_site.js [dosya]` |
-| `test_veri.py` | Veri güvenlik kontrolleri (15 test) — `py -3.13 test_veri.py` |
+| `test_veri.py` | Veri güvenlik kontrolleri (21 test) — `py -3.13 test_veri.py` |
 | `kontrol.html` | Bağlantı teşhis sayfası. Bilerek **hiçbir dış kaynağı yok** (yazı tipi dahil) — ölçtüğü şey zaten dış erişim. `docs/kontrol.html`'e olduğu gibi kopyalanıyor. |
 | `test_kontrol.js` | Teşhis sayfası doğru teşhis koyuyor mu (23 test) — `node test_kontrol.js` |
 | `test_canli_tazeleme.js` | Eskitilmiş kopya yayındaki `veri.json`'dan tazeleniyor mu (6 test, **ağa çıkar**; erişemezse kendini atlar) |
@@ -214,6 +215,28 @@ eşleşmezse yapı sessizce geçmiyor, HATA verip duruyor.
 Otomatik güncelleme tökezlerse kullanıcı o ayın oranını kendi girebiliyor
 (sol paneldeki "Elle oran ekle" bölümü). Girilen oran `localStorage`'da
 (`nafaka-elle-oranlar-v1`) saklanıyor.
+
+**İki ayrı elle girme yolu var, karıştırma:**
+
+| | Nerede saklanır | Kime ulaşır |
+|---|---|---|
+| Sayfadaki "Elle oran ekle" | O kişinin tarayıcısı (`localStorage`) | **Yalnız o kişi** |
+| `oran_ekle.py` + push | `veri/endeksler.json` (depo) | **Herkes** |
+
+Otomatik güncelleme tökezlerse doğru hamle `oran_ekle.py` ile oranı kaynağa
+yazıp yayınlamak — 20 kişiye "elle gir" demek değil:
+
+```
+py -3.13 oran_ekle.py TUFE 2026-08 --ort12 31.20 --yillik 30.50
+py -3.13 site_yap.py
+git add -A && git commit -m "elle: TÜİK 2026-08" && git push
+```
+
+Eklenen ay `_elle: true` işaretiyle yazılıyor. Bu işaret iki iş yapıyor:
+sayfada "elle girildi" diye görünüyor (rakamın otomatik çekilmediği belli
+oluyor) ve `veri_cek.py` içindeki `elle_koru()` sayesinde bir sonraki çekimde
+**ne siliniyor ne de yanlış alarm veriyor** — TÜİK o ayı vermeye başlayınca
+resmi değer devralıyor, vermiyorsa elle konulan duruyor.
 
 **Kural: RESMİ VERİ KAZANIR, ama elle girilen SİLİNMEZ.**
 `hesap.js` içindeki `elleBirlestir(veri, elle)` bunu yapıyor:
