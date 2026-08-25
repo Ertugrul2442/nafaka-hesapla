@@ -536,9 +536,22 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
   });
   $("basAy").value = "1";
 
-  var sonTufe = H.ayCoz(VERI.seriler.TUFE.son_ay);
-  $("bitYil").value = sonTufe.yil;
-  $("bitAy").value = String(sonTufe.ay);
+  // Bitis tarihi, elimizdeki son aya ayarlaniyor. Veri sonradan tazelenirse
+  // kullanici bu alana dokunmadiysa yeni aya kaydirilir (bkz. veriyiTazele).
+  var varsayilanBitis = H.ayCoz(VERI.seriler.TUFE.son_ay);
+  $("bitYil").value = varsayilanBitis.yil;
+  $("bitAy").value = String(varsayilanBitis.ay);
+
+  function bitisiIlerlet(){
+    var yeni = H.ayCoz(VERI.seriler.TUFE.son_ay);
+    var dokunulmamis = +$("bitYil").value === varsayilanBitis.yil &&
+                       +$("bitAy").value === varsayilanBitis.ay;
+    if (dokunulmamis) {
+      $("bitYil").value = yeni.yil;
+      $("bitAy").value = String(yeni.ay);
+    }
+    varsayilanBitis = yeni;
+  }
 
   function kunyeYaz(){
     var t = VERI.seriler.TUFE, u = VERI.seriler.UFE;
@@ -580,6 +593,7 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
         if (!(taze.seriler.TUFE.son_ay > VERI.seriler.TUFE.son_ay)) return;  // daha yeni degil
         VERI = taze;
         tazelendi = true;
+        bitisiIlerlet();   // yeni ay cekildiyse cetvele de girsin
         kunyeYaz();
         eskilikUyarisi();
         tazele();

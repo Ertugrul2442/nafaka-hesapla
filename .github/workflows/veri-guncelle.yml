@@ -56,6 +56,8 @@ jobs:
         run: |
           node test_hesap.js
           node test_site.js
+          # Canlı tazeleme testi ağa çıkar; erişemezse kendini atlar, düşürmez.
+          node test_canli_tazeleme.js
 
       - name: Değişikliği işle ve yayına gönder
         if: steps.cek.outputs.yeni == 'evet'

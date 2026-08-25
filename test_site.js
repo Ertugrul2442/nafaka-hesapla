@@ -260,6 +260,23 @@ kontrol("aksan-uzeri her uc temada tanimli", uc === 3, "bulunan " + uc);
   kontrol("cetvel taze veriyle yeniden hesaplandi",
           guncel.kayit.govde.innerHTML.includes(bekBicim), "aranan " + bekBicim);
 
+  console.log("\n--- tazelenen ay cetvele gercekten giriyor mu ---");
+  kontrol("dokunulmamis bitis tarihi yeni aya ilerledi",
+          guncel.kayit.bitYil.value === "2026" && guncel.kayit.bitAy.value === "8",
+          guncel.kayit.bitAy.value + "." + guncel.kayit.bitYil.value);
+  kontrol("cetvelin son satiri yeni ayi kapsiyor",
+          guncel.kayit.govde.innerHTML.includes("Ağustos 2026"),
+          guncel.kayit.govde.innerHTML.slice(-260));
+
+  // kullanici tarihi kendi degistirdiyse tazeleme onun secimini ezmemeli
+  const secimli = sayfayiKur("file:", { tazeVeri: taze });
+  secimli.kayit.bitYil.value = "2023";
+  secimli.kayit.bitAy.value = "6";
+  await bekle();
+  kontrol("kullanicinin sectigi bitis tarihi korundu",
+          secimli.kayit.bitYil.value === "2023" && secimli.kayit.bitAy.value === "6",
+          secimli.kayit.bitAy.value + "." + secimli.kayit.bitYil.value);
+
   console.log("\n--- bozuk/eski cevap gelirse gomulu veriye zarar vermemeli ---");
   const bozuk = sayfayiKur("file:", { tazeVeri: { seriler: { TUFE: {} } } });
   await bekle();
