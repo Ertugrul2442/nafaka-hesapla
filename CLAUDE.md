@@ -8,28 +8,41 @@ gözetimsiz çalışması ve kendini güncellemesi şart.
 **Depo:** https://github.com/Ertugrul2442/nafaka-hesapla (herkese açık)
 **Claude artifact kopyası:** https://claude.ai/code/artifact/43dcbd79-3369-4582-b346-e7e72b5c398b
 
-## Durum (25.08.2026 akşamı)
+## Durum (26.08.2026) — YAYINDA, GERÇEK KULLANICILARI VAR
 
-Çalışıyor ve uçtan uca kanıtlandı. Veri TÜİK'ten çekiliyor, sayfa kuruluyor,
-GitHub Pages yayınlıyor, aylık otomatik güncelleme iki yolda da prova edildi.
-211 test geçiyor (56 motor + 105 sayfa + 21 veri + 23 teşhis + 6 canlı ağ).
+Çalışıyor, uçtan uca kanıtlandı, **adliyede sahada denendi ve açıldı**.
+Ertuğrul linki dağıttı; artık sayfayı kullanan gerçek insanlar var.
+Bundan sonra yapılan her değişiklik çalışan bir aracı bozabilir — önce test,
+sonra push.
 
-### ⏭ SIRADAKİ İŞ — 26.08.2026 sabahı
+Veri TÜİK'ten çekiliyor, sayfa kuruluyor, GitHub Pages yayınlıyor, aylık
+otomatik güncelleme iki yolda da prova edildi. 211 test geçiyor
+(56 motor + 105 sayfa + 21 veri + 23 teşhis + 6 canlı ağ).
 
-Ertuğrul adliyeye gidip **ölçüm yapacak**. Masaüstünde hazır iki dosya var:
-`Nafaka-Cetveli.html` ve `Baglanti-Kontrolu.html`.
+### ✅ ADLİYE ÖLÇÜMÜ YAPILDI — 26.08.2026
 
-Yapacağı: önce `ertugrul2442.github.io/nafaka-hesapla` adresini açmayı denemek,
-açılmazsa `Baglanti-Kontrolu.html`'i çalıştırıp sonucu getirmek.
+Ertuğrul adliyede siteyi açtı: **`ertugrul2442.github.io/nafaka-hesapla` açıldı.**
+Kurum ağı `github.io`'yu engellemiyor. Link meslektaşlarına dağıtıldı.
 
-**Sonuç gelince yapılacaklar:**
-- Açıldıysa → hiçbir şey. Link dağıtılır, "Engelli ağ" bölümündeki açık soru
-  kapatılır.
-- Açılmadıysa → (a) kendi alan adı önerilir (yılda 10-15 dolar, düz `.com`
-  kategori filtresine `github.io` kadar takılmaz), ya da (b) dosya doğrudan
-  dağıtılır — ikisi de bugün çalışır durumda.
-- "Ayar saklama ×" çıktıysa → ayarları dosyanın içine gömen plan B gündeme
-  gelir (bkz. "Engelli ağ" bölümü). Ertuğrul'un kendi makinesinde ✓ çıktı.
+Bunun kapattığı işler — **tekrar gündeme getirme:**
+- Kendi alan adı almaya gerek yok (yılda 10-15 dolar tasarruf).
+- Dosyayı elden dağıtma zorunluluğu yok (yine de yedek yol olarak duruyor).
+- Ayarları dosyaya gömen "plan B" rafta kalıyor.
+
+**Ölçülmeyen tek şey:** adliye tarayıcısında `localStorage` açık mı. Site
+açıldığı için `kontrol.html` çalıştırılmadı. Etkilediği tek özellik "elle oran
+ekle" — kapalıysa sayfa zaten "kaydedilemedi" diyor, hesap yine doğru çalışıyor.
+Biri şikâyet ederse `kontrol.html` ile ölçülür.
+
+### ⏭ SIRADAKİ İŞ
+
+Belirli bir iş yok — **kullanıcılardan gelecek geri bildirimi bekle.**
+Sıradaki adaylar aşağıdaki "Sıradaki işler" bölümünde; hiçbiri kendiliğinden
+yapılmayacak.
+
+Takvimdeki tek gerçek olay: **03.09.2026** — TÜİK Ağustos verisini yayımlıyor,
+GitHub Actions kendi çekmeli. Çekemezse Ertuğrul'a e-posta gelir; kurtarma yolu
+`oran_ekle.py` (bkz. "Elle oran ekleme").
 
 **Maliyet: 0 TL.** Sunucu yok, veritabanı yok, Supabase yok. Sayfa tamamen
 istemci tarafında çalışıyor; tek "arka uç" ayda bir çalışan GitHub Actions işi.
@@ -148,13 +161,19 @@ Ya da `gh workflow run veri-guncelle.yml --ref main`.
 
 ## Engelli ağ / internetsiz kullanım
 
-**AÇIK SORU — 26.08.2026'da ölçülecek.** Adliye bilgisayarları `github.io`
-adresine erişebiliyor mu? Bilinmiyor. GitHub Pages kurumsal/kamu ağlarında
-"kullanıcı içeriği" ya da "proxy" kategorisinden engellenebiliyor.
+**CEVAPLANDI (26.08.2026): adliye ağı engellemiyor.** Ertuğrul adliyede
+`ertugrul2442.github.io/nafaka-hesapla` adresini açtı, sayfa geldi. Yani
+GitHub Pages'in kurumsal filtrelere takılma riski **bu adliyede gerçekleşmedi**.
 
-Bunun için `kontrol.html` yazıldı: adliyede açılıp dört şeyi ölçüyor —
-siteye erişim, `veri.json`'a erişim, Google Fonts ve **tarayıcının
-`localStorage`'a izin verip vermediği**. Sonucu buraya yaz.
+Dikkat: bu ölçüm **bir adliyenin ağında** yapıldı. Başka bir kurumda (başka il,
+başka bakanlık ağı) filtre farklı olabilir. O yüzden aşağıdaki yedek yolların
+hiçbiri sökülmedi — indirilebilir tek dosya, önbellek katmanı ve `kontrol.html`
+duruyor. Yeni bir yerde açılmazsa önce `kontrol.html` çalıştırılsın.
+
+`kontrol.html` dört şeyi ölçüyor: siteye erişim, `veri.json`'a erişim,
+Google Fonts ve **tarayıcının `localStorage`'a izin verip vermediği**.
+Adliyede site açıldığı için çalıştırılmadı — oradaki `localStorage` durumu
+hâlâ bilinmiyor (elle oran ekleme dışında bir şeyi etkilemiyor).
 
 **İkinci soru CEVAPLANDI (25.08.2026):** `file://` ile açılan sayfada
 `localStorage` **çalışıyor** — Ertuğrul'un makinesinde `kontrol.html` dosyadan
@@ -162,9 +181,9 @@ açılıp ölçüldü, "Ayar saklama ✓". Yani indirilen dosyada elle girilen o
 kalıcı. Bu, kullanıcının kendi Windows makinesinde ölçüldü; adliyede kurum
 politikası site verisini kapatmış olabilir — `kontrol.html` orada da söyleyecek.
 
-**Plan B'ye gerek kalmadı, YAPILMADI:** ayarları dosyanın içine gömme
-(`Blob` + `<a download>`) fikri rafta. Yalnızca adliyede "Ayar saklama ×"
-çıkarsa gündeme gelsin.
+**Plan B RAFTA KALDI, YAPILMAYACAK:** ayarları dosyanın içine gömme
+(`Blob` + `<a download>`) fikri. Site adliyede açıldığı için gerekçesi ortadan
+kalktı. Yalnızca somut bir yerde "Ayar saklama ×" ölçülürse geri açılsın.
 
 ### İndirilen dosya nasıl güncel kalıyor
 
@@ -218,10 +237,12 @@ Cevabı beklemeden risk düşürüldü:
 - `test_site.js` sayfayı hem `https:` hem `file:` protokolüyle, sahte tarihle ve
   sahte ağ cevaplarıyla kurup sınıyor; dışa giden bağımlılık listesini de ölçüyor.
 
-**Engelliyse seçenekler:** (a) kendi alan adı — düz bir `.com`, bilinen bir
-kullanıcı-içeriği alanı olmadığı için kategoriye takılma ihtimali çok daha
-düşük, yılda 10-15 dolar; (b) dosyayı doğrudan dağıtmak; (c) telefondan
-mobil veriyle açmak — kurum filtresini tamamen atlar.
+**Başka bir kurumda engellenirse seçenekler** (adliyede gerekmedi, hazır
+duruyorlar): (a) dosyayı doğrudan dağıtmak — 75 KB, e-postayla gider, en ucuz
+ve en hızlı yol; (b) telefondan mobil veriyle açmak — kurum filtresini tamamen
+atlar; (c) son çare kendi alan adı — düz bir `.com`, bilinen bir kullanıcı-içeriği
+alanı olmadığı için kategoriye takılma ihtimali daha düşük, yılda 10-15 dolar.
+**Para harcayan seçenek en sonda; önce (a) ve (b) denensin.**
 
 **Artifact sürümünde indirme bağlantısı yok** — Claude'un artifact
 görüntüleyicisi sayfalara dosya indirtmiyor, orada ölü düğme olurdu.
@@ -324,9 +345,13 @@ Doğrulanmış örnek: Ocak 2022'de 1.000 ₺, TÜFE 12 aylık ortalama, önceki
 
 - **Dosya kaydetme:** bir kişi birden çok nafaka dosyasıyla çalışıyorsa tutar
   ve tarihi her seferinde yeniden yazıyor. Kullanıcıya soruldu, "adamlar
-  kullanmaya başlasın, sıkıntı olursa" denildi — **kendiliğinden yapma**.
+  kullanmaya başlasın, sıkıntı olursa" denildi. 26.08.2026'da kullanmaya
+  başladılar — yani şartın ilk yarısı doldu, **ikincisi (şikâyet) hâlâ
+  beklemede. Şikâyet gelmeden yapma.**
 
 - Birikmiş nafaka alacağı için yasal faiz hesabı.
 - Karar metninden tarih/tutar okuyup formu otomatik doldurma.
-- Kendi alan adı (yılda 10-15 dolar) — kullanıcı şimdilik istemedi.
+- ~~Kendi alan adı~~ — **gerekmiyor**, adliye `github.io`'yu açtı (26.08.2026).
+  Yalnız başka bir kurumda engel çıkarsa ve (a)/(b) yolları da yetmezse gündeme
+  gelsin.
 - Kullanım sayacı / analitik yok; kaç kişi kullanıyor bilinmiyor.
