@@ -47,6 +47,33 @@ GitHub Actions kendi çekmeli. Çekemezse Ertuğrul'a e-posta gelir; kurtarma yo
 **Maliyet: 0 TL.** Sunucu yok, veritabanı yok, Supabase yok. Sayfa tamamen
 istemci tarafında çalışıyor; tek "arka uç" ayda bir çalışan GitHub Actions işi.
 
+### 🏁 Teslim tutanağı — 26.08.2026, kapanışta ölçüldü
+
+Proje bu tarihte **bitmiş sayıldı**. Aşağıdakiler tahmin değil, o gün koşturulup
+görülen sonuçlar:
+
+| Ne | Sonuç |
+|---|---|
+| Canlı sayfa | `HTTP 200`, 92,9 KB |
+| Canlı `veri.json` | `HTTP 200`, 48,5 KB |
+| Yayındaki verinin son ayı | **2026-07** (TÜFE ort12 %31,90 · Yİ-ÜFE ort12 %27,54) |
+| Testler | **211/211 geçti** — 56 motor + 105 sayfa + 23 teşhis + 21 veri + 6 canlı ağ |
+| Çalışma dizini | temiz |
+| Adliye erişimi | ✅ açıldı, link dağıtıldı |
+| Aylık maliyet | 0 TL |
+
+**Yeni bir oturum buraya geldiğinde ilk yapacağı iş:** hiçbir şey. Bu proje
+bakım modunda. Kullanıcıdan somut bir istek ya da şikâyet gelmeden kod
+değiştirme — sayfayı gerçek insanlar kullanıyor.
+
+**Sadece iki şey seni harekete geçirsin:**
+1. Ertuğrul'a GitHub'dan **hata e-postası** geldi (= aylık veri çekimi düştü)
+   → "Elle oran ekleme" bölümündeki `oran_ekle.py` yolu.
+2. Bir kullanıcı **somut bir sorun** bildirdi → önce testle üret, sonra düzelt.
+
+Değişiklik yaparsan sıra şu, tersi değil: testleri koştur → `site_yap.py` →
+testleri tekrar koştur → push. Yayına bozuk sayfa gitmesin.
+
 ## Mimari — neden böyle
 
 Uygulamanın veritabanı, üyeliği, kullanıcı verisi yok. Ortada bir HTML sayfası
