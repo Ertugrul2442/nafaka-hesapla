@@ -260,6 +260,23 @@ kontrol("aksan-uzeri her uc temada tanimli", uc === 3, "bulunan " + uc);
   const V = window.ENDEKS_VERISI;
   const sonAy = V.seriler.TUFE.son_ay;
 
+  // Sahte "siteden gelen yeni ay" GOMULU VERIDEN turetilir, sabit yazilmaz.
+  // Eskiden "2026-08" diye sabit yaziliydi: TUIK o aya ulasinca gomulu veri de
+  // 2026-08 oldu, "yeni ay" senaryosu kurulamadi ve 6 test dustu. Is akisi da
+  // testler duserse yayina gondermedigi icin arac her yeni ayda kendini
+  // kilitliyordu (CLAUDE.md'deki 7 numarali tuzagin ayni sinifi).
+  const AY_ADLARI = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+                     "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+  const sonrakiAy = kod => {
+    let [y, a] = kod.split("-").map(Number);
+    if (++a > 12) { a = 1; y += 1; }
+    return y + "-" + String(a).padStart(2, "0");
+  };
+  const ayAdi = kod => {
+    const [y, a] = kod.split("-").map(Number);
+    return AY_ADLARI[a - 1] + " " + y;
+  };
+
   console.log("\n--- veri tazeligi: ekranda hangisi kullanildigi yaziyor mu ---");
   const agsiz = sayfayiKur("file:");                 // fetch reddediliyor
   await bekle();
@@ -274,7 +291,7 @@ kontrol("aksan-uzeri her uc temada tanimli", uc === 3, "bulunan " + uc);
 
   console.log("\n--- siteden taze veri gelince kendini gunceller mi ---");
   const taze = JSON.parse(JSON.stringify(V));
-  const yeniAy = "2026-08";
+  const yeniAy = sonrakiAy(sonAy);
   ["TUFE", "UFE"].forEach(k => {
     taze.seriler[k].aylik[yeniAy] = { endeks: 140, yillik: 30, ort12: 31 };
     taze.seriler[k].son_ay = yeniAy;
@@ -285,7 +302,7 @@ kontrol("aksan-uzeri her uc temada tanimli", uc === 3, "bulunan " + uc);
           guncel.kayit.kapsam.innerHTML.includes("siteden tazelendi"),
           guncel.kayit.kapsam.innerHTML.slice(-90));
   kontrol("kapsam yeni aya guncellendi",
-          guncel.kayit.kapsam.innerHTML.includes("Ağustos 2026"),
+          guncel.kayit.kapsam.innerHTML.includes(ayAdi(yeniAy)),
           guncel.kayit.kapsam.innerHTML.slice(-140));
   const H2 = window.NafakaHesap;
   const bek = H2.hesapla(taze, {
@@ -299,10 +316,11 @@ kontrol("aksan-uzeri her uc temada tanimli", uc === 3, "bulunan " + uc);
 
   console.log("\n--- tazelenen ay cetvele gercekten giriyor mu ---");
   kontrol("dokunulmamis bitis tarihi yeni aya ilerledi",
-          guncel.kayit.bitYil.value === "2026" && guncel.kayit.bitAy.value === "8",
+          guncel.kayit.bitYil.value === yeniAy.slice(0, 4) &&
+          Number(guncel.kayit.bitAy.value) === Number(yeniAy.slice(5)),
           guncel.kayit.bitAy.value + "." + guncel.kayit.bitYil.value);
   kontrol("cetvelin son satiri yeni ayi kapsiyor",
-          guncel.kayit.govde.innerHTML.includes("Ağustos 2026"),
+          guncel.kayit.govde.innerHTML.includes(ayAdi(yeniAy)),
           guncel.kayit.govde.innerHTML.slice(-260));
 
   // kullanici tarihi kendi degistirdiyse tazeleme onun secimini ezmemeli
@@ -348,15 +366,15 @@ kontrol("aksan-uzeri her uc temada tanimli", uc === 3, "bulunan " + uc);
   kontrol("uyari guncel adresi veriyor",
           eskimis.kayit.veriUyari.innerHTML.includes("ertugrul2442.github.io/nafaka-hesapla"));
   kontrol("uyari hangi aya kadar dogru oldugunu soyluyor",
-          eskimis.kayit.veriUyari.innerHTML.includes("Temmuz 2026"),
+          eskimis.kayit.veriUyari.innerHTML.includes(ayAdi(sonAy)),
           eskimis.kayit.veriUyari.innerHTML.slice(0, 160));
   kontrol("eskimis olsa da cetvel yine uretiliyor",
           (eskimis.kayit.govde.innerHTML.match(/<tr/g) || []).length >= 6);
 
   const eskiAmaTazelendi = sayfayiKur("file:", { bugun: new Date(2027, 2, 20), tazeVeri: taze });
   await bekle();
-  kontrol("tazelendikten sonra da uyari duruyorsa dogru duruyor (2026-08 hala eski)",
-          eskiAmaTazelendi.kayit.veriUyari.innerHTML.includes("Ağustos 2026"),
+  kontrol("tazelendikten sonra da uyari duruyorsa dogru duruyor (" + yeniAy + " hala eski)",
+          eskiAmaTazelendi.kayit.veriUyari.innerHTML.includes(ayAdi(yeniAy)),
           eskiAmaTazelendi.kayit.veriUyari.innerHTML.slice(0, 160));
 
   console.log("\n--- elle oran ekleme ---");
@@ -449,7 +467,7 @@ kontrol("aksan-uzeri her uc temada tanimli", uc === 3, "bulunan " + uc);
   console.log("\n--- ASIL SENARYO: evde tazelen, adliyede agsiz ac ---");
   {
     const tarayici = DepoYap({}, true);       // ayni kisinin ayni tarayicisi
-    const yeniAyKod = "2026-08";
+    const yeniAyKod = sonrakiAy(sonAy);
     const siteVerisi = JSON.parse(JSON.stringify(V));
     ["TUFE", "UFE"].forEach(k => {
       siteVerisi.seriler[k].aylik[yeniAyKod] = { endeks: 141, yillik: 30, ort12: 31 };
@@ -476,7 +494,7 @@ kontrol("aksan-uzeri her uc temada tanimli", uc === 3, "bulunan " + uc);
             adliyede.kayit.kapsam.innerHTML.includes("daha önce indirilmiş veri"),
             adliyede.kayit.kapsam.innerHTML.slice(-110));
     kontrol("kapsam yeni ayi gosteriyor",
-            adliyede.kayit.kapsam.innerHTML.includes("Ağustos 2026"),
+            adliyede.kayit.kapsam.innerHTML.includes(ayAdi(yeniAyKod)),
             adliyede.kayit.kapsam.innerHTML.slice(-150));
     kontrol("agsizken yeni ay eskilik uyarisi cikarmiyor",
             adliyede.kayit.veriUyari.innerHTML === "",
