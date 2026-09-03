@@ -41,16 +41,18 @@ Biri şikâyet ederse `kontrol.html` ile ölçülür.
 
 ### ⏭ SIRADAKİ İŞ — 03.09.2026'da kaldığı yer
 
-**Yarım kalan tek iş: sunucudaki tetikleyicinin kurulumu.** Ertuğrul'un
-yapması gereken iki adım var (token oluşturma + sunucuda 4 komut), ayrıntısı
-aşağıdaki "Tetikleme neden sunucuya taşındı" bölümünde. Betik sunucuya
-yüklendi (`~/nafaka-tetikle.sh`), ama **token ve crontab girişi konmadı** —
-yani şu an hiçbir otomatik tetikleyici yok.
+**Yarım kalan iş yok.** Tetikleyici sunucuya kuruldu ve uçtan uca
+doğrulandı (bkz. "Tetikleme neden sunucuya taşındı"). Site güncel, veri
+2026-08, testler 211/211.
 
-Kurulana kadar aylık güncelleme **elle** yapılmalı: GitHub → Actions →
-"TÜİK verisini güncelle" → Run workflow. On saniyelik iş, ayda bir.
+Takvimde iki olay var:
 
-Takvimdeki bir sonraki olay: **03.10.2026** — TÜİK Eylül verisini yayımlıyor.
+1. **04.09.2026, 10:05 TR** — sunucudaki cron'un KENDİLİĞİNDEN çalıştığı ilk
+   an. Elle çalıştırılınca çalıştığı kanıtlandı ama kendi uyandığı henüz
+   görülmedi. Doğrulama: sunucuda `tail -3 ~/nafaka-tetikle.log`.
+   O saate ait "tetiklendi" satırı yoksa cron tarafında bir sorun var demektir.
+2. **03.10.2026** — TÜİK Eylül verisini yayımlıyor. Zincirin gerçek sınavı.
+   Ertesi gün canlı `veri.json`'un `son_ay`'ı `2026-09` olmalı.
 
 **Maliyet: 0 TL.** Sunucu yok, veritabanı yok, Supabase yok. Sayfa tamamen
 istemci tarafında çalışıyor; tek "arka uç" ayda bir çalışan GitHub Actions işi.
@@ -83,7 +85,7 @@ Ertuğrul'un elinde. O gün koşturulup görülenler:
 | Testler | **211/211 geçti** (yeni veriyle *ve* sahte bir sonraki ayla) |
 | GitHub `schedule` tetiklemesi | **0 kez** — çalışmıyor, ölçüldü |
 | Windows Görev Zamanlayıcı | **hiçbir şey çalıştıramıyor**, ölçüldü |
-| Sunucudaki tetikleyici | betik yüklendi, **token + crontab yok** |
+| Sunucudaki tetikleyici | ✅ kuruldu ve doğrulandı (HTTP 204, aynı saniye GitHub'da çalışma) |
 | Aylık maliyet | 0 TL |
 
 Düzeltilen iki kilitlenme için "Tuzaklar" 9. maddeye bak. Tetikleme için
@@ -251,23 +253,33 @@ gerekmiyor — GitHub API'ye doğrudan POST atılıyor.
 **sessizce geçmiyor**, log'a "TETIKLEME YAPILMADI" yazıp 1 ile çıkıyor;
 başarılı/başarısız her yol `~/nafaka-tetikle.log`'a düşüyor.
 
-**KURULUM YARIM — Ertuğrul'un yapması gerekenler:**
+**KURULUM TAMAMLANDI — 03.09.2026, 12:59 TR'de uçtan uca doğrulandı.**
 
-1. Fine-grained token: `github.com/settings/personal-access-tokens/new`
-   → Only select repositories → `nafaka-hesapla`
-   → Repository permissions → **Actions: Read and write** (başka hiçbir şey)
+Ertuğrul token'ı üretip sunucuya koydu. Ölçülen sonuç:
 
-2. Sunucuda:
+| Halka | Kanıt |
+|---|---|
+| Sunucudaki betik çalıştı | `~/nafaka-tetikle.log`: `09:59:57 UTC \| tetiklendi (HTTP 204)` |
+| GitHub uyandı | çalışma `33741904931`, **09:59:57 UTC** — aynı saniye |
+| Cron kayıtlı | `5 7 3-8 * * $HOME/nafaka-tetikle.sh` (07:05 UTC = 10:05 TR) |
+| Token izinleri | `-rw-------` (600), sadece `ubuntu` okuyabiliyor |
+| Gereksiz tetiklemede | "Veri değişmemiş, yapacak bir şey yok" — boş commit atmadı |
 
-```
-printf '%s' 'TOKEN' > ~/.nafaka_token && chmod 600 ~/.nafaka_token
-chmod +x ~/nafaka-tetikle.sh
-( crontab -l 2>/dev/null | grep -v nafaka-tetikle; echo '5 7 3-8 * * $HOME/nafaka-tetikle.sh' ) | crontab -
-~/nafaka-tetikle.sh; tail -2 ~/nafaka-tetikle.log
-```
+Token **süresiz** seçildi. Gerekçe: izni tek depoya + yalnız `Actions` yazma
+iznine kısıtlı olduğu için çalınsa bile yapabileceği tek şey iş akışını boşuna
+tetiklemek. Buna karşılık süreli bir token'ın süresi dolduğunda tetikleme
+**sessizce** durur ve kimse fark etmez — bu projede asıl tehlike o.
+İstenirse GitHub ayarlarından anında iptal edilebilir.
 
-"tetiklendi (HTTP 204)" görülürse kurulum bitmiştir. `5 7 3-8 * *` = ayın
-3-8'i, 07:05 UTC = 10:05 TR.
+Token'ı sunucuya koyarken `read -s` kullanıldı; şifre ne ekrana basıldı ne de
+kabuk geçmişine yazıldı. **Token'a bir daha dokunma:** içeriğini yazdırma,
+sohbete kopyalama, scp etme.
+
+**Henüz görülmeyen tek şey:** cron'un KENDİLİĞİNDEN çalıştığı. Betik elle
+çalıştırılıp doğrulandı, sunucunun `cron` servisi `active`, crontab kayıtlı —
+ama zamanı gelince kendi uyandığı 03.09.2026 itibarıyla gözlenmedi. İlk
+fırsat 04.09.2026 sabahı 10:05 TR. Doğrulama:
+`tail -3 ~/nafaka-tetikle.log` — o saate ait bir "tetiklendi" satırı olmalı.
 
 **Token'a dokunma:** içeriğini yazdırma, sohbete kopyalama, scp etme.
 Kullanıcı kendisi koyar.
