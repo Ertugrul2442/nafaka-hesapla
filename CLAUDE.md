@@ -1,5 +1,10 @@
 # Nafaka Hesapla — proje notları
 
+> **Kaydırmalı/scrollcraft işini arıyorsan burası değil.** O çalışma
+> `C:\projeler\kaydirmali-deneme` altında ve kendi CLAUDE.md'si var.
+> Bu klasör yalnız nafaka hesaplama aracı, bakım modunda.
+
+
 Nafaka dosyalarında "her yıl TÜFE/ÜFE oranında artırılmasına" hükmünü hesaplayan
 web aracı. Ertuğrul kendisi kullanmıyor — **başkalarına veriyor**, o yüzden
 gözetimsiz çalışması ve kendini güncellemesi şart.
@@ -8,7 +13,7 @@ gözetimsiz çalışması ve kendini güncellemesi şart.
 **Depo:** https://github.com/Ertugrul2442/nafaka-hesapla (herkese açık)
 **Claude artifact kopyası:** https://claude.ai/code/artifact/43dcbd79-3369-4582-b346-e7e72b5c398b
 
-## Durum (26.08.2026) — YAYINDA, GERÇEK KULLANICILARI VAR
+## Durum (03.09.2026) — YAYINDA, GERÇEK KULLANICILARI VAR
 
 Çalışıyor, uçtan uca kanıtlandı, **adliyede sahada denendi ve açıldı**.
 Ertuğrul linki dağıttı; artık sayfayı kullanan gerçek insanlar var.
@@ -34,15 +39,18 @@ açıldığı için `kontrol.html` çalıştırılmadı. Etkilediği tek özelli
 ekle" — kapalıysa sayfa zaten "kaydedilemedi" diyor, hesap yine doğru çalışıyor.
 Biri şikâyet ederse `kontrol.html` ile ölçülür.
 
-### ⏭ SIRADAKİ İŞ
+### ⏭ SIRADAKİ İŞ — 03.09.2026'da kaldığı yer
 
-Belirli bir iş yok — **kullanıcılardan gelecek geri bildirimi bekle.**
-Sıradaki adaylar aşağıdaki "Sıradaki işler" bölümünde; hiçbiri kendiliğinden
-yapılmayacak.
+**Yarım kalan tek iş: sunucudaki tetikleyicinin kurulumu.** Ertuğrul'un
+yapması gereken iki adım var (token oluşturma + sunucuda 4 komut), ayrıntısı
+aşağıdaki "Tetikleme neden sunucuya taşındı" bölümünde. Betik sunucuya
+yüklendi (`~/nafaka-tetikle.sh`), ama **token ve crontab girişi konmadı** —
+yani şu an hiçbir otomatik tetikleyici yok.
 
-Takvimdeki tek gerçek olay: **03.09.2026** — TÜİK Ağustos verisini yayımlıyor,
-GitHub Actions kendi çekmeli. Çekemezse Ertuğrul'a e-posta gelir; kurtarma yolu
-`oran_ekle.py` (bkz. "Elle oran ekleme").
+Kurulana kadar aylık güncelleme **elle** yapılmalı: GitHub → Actions →
+"TÜİK verisini güncelle" → Run workflow. On saniyelik iş, ayda bir.
+
+Takvimdeki bir sonraki olay: **03.10.2026** — TÜİK Eylül verisini yayımlıyor.
 
 **Maliyet: 0 TL.** Sunucu yok, veritabanı yok, Supabase yok. Sayfa tamamen
 istemci tarafında çalışıyor; tek "arka uç" ayda bir çalışan GitHub Actions işi.
@@ -62,17 +70,48 @@ görülen sonuçlar:
 | Adliye erişimi | ✅ açıldı, link dağıtıldı |
 | Aylık maliyet | 0 TL |
 
-**Yeni bir oturum buraya geldiğinde ilk yapacağı iş:** hiçbir şey. Bu proje
-bakım modunda. Kullanıcıdan somut bir istek ya da şikâyet gelmeden kod
-değiştirme — sayfayı gerçek insanlar kullanıyor.
+### 🏁 İkinci tutanak — 03.09.2026, ilk gerçek aylık güncelleme
 
-**Sadece iki şey seni harekete geçirsin:**
-1. Ertuğrul'a GitHub'dan **hata e-postası** geldi (= aylık veri çekimi düştü)
-   → "Elle oran ekleme" bölümündeki `oran_ekle.py` yolu.
-2. Bir kullanıcı **somut bir sorun** bildirdi → önce testle üret, sonra düzelt.
+TÜİK Ağustos verisini yayımladı. **Otomatik güncelleme çalışmadı** ve sebebi
+tek değil, üç ayrı sorun üst üsteydi. Hepsi bulundu, ikisi düzeltildi, biri
+Ertuğrul'un elinde. O gün koşturulup görülenler:
+
+| Ne | Sonuç |
+|---|---|
+| Yayındaki verinin son ayı | **2026-08** (TÜFE ort12 %31,79 · Yİ-ÜFE ort12 %27,76) |
+| Canlı `veri.json` | `HTTP 200`, 48.595 bayt, çekilme damgası 09:11 UTC |
+| Testler | **211/211 geçti** (yeni veriyle *ve* sahte bir sonraki ayla) |
+| GitHub `schedule` tetiklemesi | **0 kez** — çalışmıyor, ölçüldü |
+| Windows Görev Zamanlayıcı | **hiçbir şey çalıştıramıyor**, ölçüldü |
+| Sunucudaki tetikleyici | betik yüklendi, **token + crontab yok** |
+| Aylık maliyet | 0 TL |
+
+Düzeltilen iki kilitlenme için "Tuzaklar" 9. maddeye bak. Tetikleme için
+"Tetikleme neden sunucuya taşındı" bölümüne bak.
+
+**Yeni bir oturum buraya geldiğinde:** proje bakım modunda, kendiliğinden kod
+değiştirme — sayfayı gerçek insanlar kullanıyor. Ama **bir iş yarım:**
+sunucudaki tetikleyicinin token'ı ve crontab girişi konmadı. Ertuğrul
+kurduğunu söylerse doğrula (`~/nafaka-tetikle.log`), kurmadıysa aylık
+güncelleme elle yapılacak.
+
+**Seni harekete geçirecek şeyler:**
+1. **Ayın 3-8'i geçti ve sitedeki veri hâlâ eski.** ⚠ Bu durumda
+   **e-posta GELMEZ** — çünkü iş akışı hiç başlamıyor, başlamayan iş akışı
+   hata da veremiyor. Sessiz başarısızlık. Kontrol yolu: canlı `veri.json`'un
+   `son_ay` alanına bak, `gh run list --workflow veri-guncelle.yml` ile son
+   çalışmaya bak.
+2. Ertuğrul'a GitHub'dan **hata e-postası** geldi (= iş akışı başladı ama
+   düştü) → log'a bak; veri çekilemiyorsa `oran_ekle.py` yolu.
+3. Bir kullanıcı **somut bir sorun** bildirdi → önce testle üret, sonra düzelt.
 
 Değişiklik yaparsan sıra şu, tersi değil: testleri koştur → `site_yap.py` →
 testleri tekrar koştur → push. Yayına bozuk sayfa gitmesin.
+
+**Test koşarken dikkat:** `test_canli_tazeleme.js` ağa çıkıyor ve **yayındaki**
+`veri.json` ile karşılaştırıyor. Yerelde yeni veri çekip henüz push etmediysen
+bu normaldir — ama testin geçmesi gerekir (03.09.2026'da tam da burada
+kilitlenme vardı, düzeltildi).
 
 ## Mimari — neden böyle
 
@@ -105,6 +144,8 @@ Bu yüzden:
 | `kontrol.html` | Bağlantı teşhis sayfası. Bilerek **hiçbir dış kaynağı yok** (yazı tipi dahil) — ölçtüğü şey zaten dış erişim. `docs/kontrol.html`'e olduğu gibi kopyalanıyor. |
 | `test_kontrol.js` | Teşhis sayfası doğru teşhis koyuyor mu (23 test) — `node test_kontrol.js` |
 | `test_canli_tazeleme.js` | Eskitilmiş kopya yayındaki `veri.json`'dan tazeleniyor mu (6 test, **ağa çıkar**; erişemezse kendini atlar) |
+| `.github/workflows/cron-sinama.yml` | **Geçici deney.** GitHub'ın `schedule`'ı bu depoda çalışıyor mu ölçüyor: 5 dakikada bir, hiçbir şey çekmeden tarih basar. 03.09.2026'da kondu, hiç tetiklenmedi. Schedule bir gün canlanırsa ilk bu haber verir; sonra silinebilir. |
+| `tetikle.cmd` | Windows Görev Zamanlayıcı için tetikleme betiği. Elle çalıştırılınca çalışıyor, **ama görev zamanlayıcı bu makinede hiçbir şey çalıştıramadığı için kullanılmıyor.** |
 
 `test_site.js` argüman alabiliyor: canlı sayfayı indirip `node test_site.js canli.html`
 ile sınayabilirsin.
@@ -142,9 +183,16 @@ bilerek seçilmedi.
 
 ## Otomatik güncelleme nasıl çalışıyor
 
-`.github/workflows/veri-guncelle.yml`, ayın **3-8'i arası günde iki kez**
-(11:00 ve 16:00 TR) çalışıyor. TÜİK yeni ayı 3'ünde saat 10:00'da yayımlıyor;
-gecikirse kaçırmamak için aralık geniş tutuldu.
+`.github/workflows/veri-guncelle.yml` içindeki cron **ayın 3-8'i arası TR
+saatiyle 10:00-16:59 arası her 10 dakikada bir** (`*/10 7-13 3-8 * *`).
+Eskiden günde iki kezdi (11:00 ve 16:00); TÜİK 10:00'da yayımladığı için bir
+saat boşa gidiyordu, 03.09.2026'da değiştirildi.
+
+> ⚠ **AMA BU CRON ÇALIŞMIYOR — 03.09.2026'da ölçüldü.** GitHub'ın `schedule`
+> tetikleyicisi bu depoda **bir kez bile** çalışmadı. Ayrıntı ve elenen
+> yollar için aşağıdaki "Tetikleme neden sunucuya taşındı" bölümüne bak.
+> Cron satırı yine de duruyor: GitHub bir gün tetiklemeye başlarsa doğru
+> saatte başlasın diye.
 
 `veri_cek.py` çıkış koduna göre dallanıyor:
 - **0** → yeni veri var: sayfa kurulur, testler koşar, **testler geçerse** commit'lenip
@@ -155,6 +203,81 @@ gecikirse kaçırmamak için aralık geniş tutuldu.
 
 Elle çalıştırmak: GitHub → Actions → "TÜİK verisini güncelle" → Run workflow.
 Ya da `gh workflow run veri-guncelle.yml --ref main`.
+
+## Tetikleme neden sunucuya taşındı (03.09.2026)
+
+TÜİK Ağustos verisini 3 Eylül 10:00'da yayımladı. İş akışı **kendiliğinden
+çalışmadı**. Sebebi arandı, iki tetikleme yolu ölçülerek elendi.
+
+### Elenen 1: GitHub'ın kendi `schedule` tetikleyicisi
+
+Depoda yapısal engel **yok** — hepsi tek tek bakıldı: `fork=false`,
+`private=false`, `disabled=false`, `archived=false`, Actions `enabled=true`
+ve `allowed_actions=all`, iş akışı `state=active`, varsayılan dal `main`,
+dosya UTF-8 + LF + BOM'suz, YAML geçerli. `workflow_dispatch` sorunsuz
+çalışıyor (o gün 3 kez kullanıldı).
+
+Buna rağmen asıl iş akışı 11:00'dan 12:40'a kadar **8'den fazla tetikleme
+penceresini** kaçırdı. "Cron mu bozuk, yoksa hiç mi denenmedi" sorusunu
+ayırmak için `*/5 * * * *` ile çalışan, hiçbir şey çekmeyen bir **nabız iş
+akışı** kondu (`.github/workflows/cron-sinama.yml`): **46 dakikada 9
+penceresini de kaçırdı.** Depodaki `event=schedule` çalışma sayısı: **0**.
+
+Kesin sebebi bilinmiyor — GitHub bunu API'de göstermiyor. Bilinen tek şey
+şu: **bu depoda schedule'a güvenilemez.**
+
+### Elenen 2: Windows Görev Zamanlayıcı
+
+Ertuğrul'un makinesinde denendi. Görev kaydoldu (`State: Ready`,
+`LogonType: Interactive`), `Start-ScheduledTask` çalıştı, `LastTaskResult: 0`
+döndü — **ama hiçbir şey olmadı.** Yolu 8.3 kısa isme (`C:\projeler\NAFAKA~1`)
+çevirmek de, `cmd.exe /c` üzerinden çağırmak da işe yaramadı.
+
+Ayırt edici test: eylemi `cmd.exe /c echo calisti > dosya.txt` yapan **en
+yalın görev** bile dosyayı oluşturmadı, yine "başarılı" dedi. `Schedule`
+servisi `Running`. Yani **bu makinede Görev Zamanlayıcı hiçbir şey
+çalıştıramıyor** (oturum yönetici değildi; yönetici oturumunda test
+edilmedi). Çalışmayan görev silindi.
+
+Betiğin kendisi sağlamdı: elle çalıştırılınca iş akışını tetikledi.
+Kalıntısı `tetikle.cmd` — Windows yolu bir gün denenecekse duruyor.
+
+### Seçilen yol: Oracle sunucusu (borsa-sunucu-2, 130.61.203.236)
+
+7/24 açık, `cron` aktif, `curl` var, ~574 MB boş RAM. `gh` kurulu değil ama
+gerekmiyor — GitHub API'ye doğrudan POST atılıyor.
+
+`~/nafaka-tetikle.sh` **yüklendi.** Token dosyası yoksa ya da boşsa
+**sessizce geçmiyor**, log'a "TETIKLEME YAPILMADI" yazıp 1 ile çıkıyor;
+başarılı/başarısız her yol `~/nafaka-tetikle.log`'a düşüyor.
+
+**KURULUM YARIM — Ertuğrul'un yapması gerekenler:**
+
+1. Fine-grained token: `github.com/settings/personal-access-tokens/new`
+   → Only select repositories → `nafaka-hesapla`
+   → Repository permissions → **Actions: Read and write** (başka hiçbir şey)
+
+2. Sunucuda:
+
+```
+printf '%s' 'TOKEN' > ~/.nafaka_token && chmod 600 ~/.nafaka_token
+chmod +x ~/nafaka-tetikle.sh
+( crontab -l 2>/dev/null | grep -v nafaka-tetikle; echo '5 7 3-8 * * $HOME/nafaka-tetikle.sh' ) | crontab -
+~/nafaka-tetikle.sh; tail -2 ~/nafaka-tetikle.log
+```
+
+"tetiklendi (HTTP 204)" görülürse kurulum bitmiştir. `5 7 3-8 * *` = ayın
+3-8'i, 07:05 UTC = 10:05 TR.
+
+**Token'a dokunma:** içeriğini yazdırma, sohbete kopyalama, scp etme.
+Kullanıcı kendisi koyar.
+
+Not: iş akışı her gün tetiklenirse de zarar yok — veri değişmemişse
+`veri_cek.py` 3 döndürüyor, iş akışı "Veri değişmemiş, yapacak bir şey yok"
+deyip boş commit bile atmıyor. 03.09.2026'da ölçüldü.
+
+**Kurulana kadar yedek yol:** GitHub → Actions → "TÜİK verisini güncelle"
+→ Run workflow. Ayda bir, on saniye.
 
 ## Tuzaklar (ölçülmüş, tahmin değil)
 
@@ -185,6 +308,39 @@ Ya da `gh workflow run veri-guncelle.yml --ref main`.
    kapatılıyor.** Veri aylık geldiği için commit de aylık düşüyor, sınıra
    ulaşılmıyor. Yine de TÜİK aylarca yayımlamazsa bu risk var — bayatlık
    kontrolü o durumda iş akışını düşürüp e-posta attırıyor.
+
+9. **KİLİTLENME — testlerde ay sabit yazmak. 03.09.2026'da iki kez yaşandı,
+   ikisi de aracın kendini güncellemesini engelliyordu.** İş akışı testler
+   geçmezse yayına göndermiyor; yani ay bilgisi sabit yazılmış bir test,
+   **tam güncelleme gereken anda** düşüp aracı kilitliyor. 7. maddeyle aynı
+   sınıf, ama bu sefer iki ayrı yerde:
+
+   - `test_site.js` sahte "siteden gelen yeni ay"ı `"2026-08"` diye sabit
+     tutuyordu (ve beklenen metinleri `"Ağustos 2026"` / `"Temmuz 2026"`).
+     TÜİK 2026-08'i yayımlayınca gömülü veri de 2026-08 oldu, "yeni ay"
+     senaryosu kurulamadı, **9 test düştü.** Artık ay gömülü verinin son
+     ayından türetiliyor (`sonrakiAy` / `ayAdi`).
+   - `test_canli_tazeleme.js` "eskitilmiş kopya"yı gömülü veriden **son ayı
+     silerek** üretiyordu. Ama bu test tam da yeni veri kurulup henüz yayına
+     gitmemişken koşuyor; o anda gömülü veri yayındakinden bir ay ileride
+     oluyor ve son ayı silmek kopyayı yayındakiyle **eşit** yapıyor. Eşit
+     veriden tazelenme olmuyor (doğru davranış), **3 test düştü.** Artık
+     kopyadan yayındaki son ay **ve sonrası** siliniyor.
+
+   **Kural: bir testte ay/tarih sabit yazma — veriden türet.** Yazman
+   gerekiyorsa, o testin gelecek ay da anlamlı kalıp kalmadığını sor.
+
+   **Nasıl sınanır (kendini kandırmamak için):** `veri/endeksler.json`'u
+   yedekle, içine sahte bir sonraki ay ekle, `site_yap.py` çalıştır, testleri
+   koştur, yedeği geri koy. 03.09.2026'da böyle kanıtlandı — sahte 2026-09
+   ile de 105/105 geçti.
+
+10. **Çalıştırmadan önce `--help` verme alışkanlığı burada tehlikeli.**
+   `veri_cek.py --help` diye çağrıldı; betik argparse kullanmadığı için
+   bayrağı yok saydı ve **gerçekten TÜİK'e gidip veri dosyasını yazdı.**
+   Zararsız atlatıldı (`git checkout` ile geri alındı) ama ölçüm sırasını
+   bozdu. Bu depodaki betiklerin çoğu argüman almıyor — ne yaptıklarını
+   öğrenmek için `--help` değil, dosyanın başını oku.
 
 ## Engelli ağ / internetsiz kullanım
 
