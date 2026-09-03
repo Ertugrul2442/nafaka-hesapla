@@ -1,12 +1,14 @@
 name: TÜİK verisini güncelle
 
 # TÜİK, bir önceki ayın enflasyon verisini her ayın 3'ünde saat 10:00'da yayımlıyor.
-# Yayın gecikirse kaçırmamak için ayın 3-8'i arasında günde iki kez bakıyoruz.
+# Yayın anından itibaren yakalamak için ayın 3-8'i arasında, Türkiye saatiyle
+# 10:00 ile 16:59 arası HER 10 DAKİKADA BİR bakıyoruz. (Eskiden günde iki kezdi,
+# 11:00 ve 16:00 - yayından bir saat sonra bakıyordu, bir saat boşa gidiyordu.)
 # Veri değişmemişse hiçbir şey işlenmiyor; değişmişse sayfa yeniden kurulup
 # testlerden geçtikten SONRA yayına gidiyor.
 on:
   schedule:
-    - cron: "0 8,13 3-8 * *"     # UTC -> Türkiye saatiyle 11:00 ve 16:00
+    - cron: "*/10 7-13 3-8 * *"  # UTC -> TR saatiyle 10:00-16:59 arasi her 10 dk
   workflow_dispatch:              # Actions sekmesinden elle de çalıştırılabilir
 
 permissions:
