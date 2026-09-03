@@ -1,0 +1,29 @@
+# GECICI KONTROL DENEYI - 03.09.2026
+#
+# Amac: bu depoda GitHub'in "schedule" tetikleyicisi CALISIYOR MU, olcmek.
+# Asil is akisi (veri-guncelle.yml) 03.09.2026'da bes tetikleme penceresini
+# ust uste kacirdi ve bu depoda bugune kadar hic schedule olayli calisma
+# olmamisti - yani "cron bozuk mu, yoksa hic mi denenmedi" ayirt edilemiyordu.
+#
+# Bu dosya hicbir sey cekmez, hicbir seye yazmaz, sadece tarih basar.
+# Public depoda Actions ucretsiz oldugu icin maliyeti 0 TL.
+#
+# >>> OLCUM BITINCE BU DOSYA SILINECEK. <<<
+name: Cron sinamasi (gecici)
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # her 5 dakikada bir, her gun - bilerek en genis
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  nabiz:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Nabiz
+        run: |
+          echo "Tetikleyen olay: $GITHUB_EVENT_NAME"
+          echo "UTC: $(date -u '+%Y-%m-%d %H:%M:%S')"
+          echo "Bu calisma gorunuyorsa bu depoda schedule CALISIYOR demektir."
