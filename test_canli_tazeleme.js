@@ -96,18 +96,28 @@ function calistir(html) {
   console.log("\n--- bir ay eskitilmis kopya kendini tazeliyor mu ---");
   const tam = fs.readFileSync(path.join(kok, "docs", "index.html"), "utf8");
 
-  // Gomulu veriden son ayi silerek "gecen ay indirilmis dosya"yi taklit ediyoruz.
+  // Gomulu veriyi eskiterek "gecen ay indirilmis dosya"yi taklit ediyoruz.
+  //
+  // DIKKAT - burada bir kilitlenme yasandi (03.09.2026): eskiden sadece
+  // "son ayi sil" deniyordu. Ama bu test tam da yeni veri kurulup HENUZ
+  // yayina gitmemisken kosuyor; o anda gomulu veri yayindakinden bir ay
+  // ileride oluyor ve son ayi silmek kopyayi yayindakiyle ESIT yapiyor.
+  // Esit veriden tazelenme olmaz (dogru davranis), test duser, is akisi
+  // testler dusunce yayina gondermez, yayindaki veri hep eski kalir.
+  // Cozum: yayindaki son ayi VE sonrasini sil - kopya her durumda
+  // yayindakinden eski olsun, tazelenecek bir sey kesin kalsin.
   const m = /window\.ENDEKS_VERISI = (\{[\s\S]*?\});<\/script>/.exec(tam);
   if (!m) throw new Error("gomulu veri bulunamadi");
   const gomulu = JSON.parse(m[1].replace(/<\\\//g, "</"));
-  const silinen = gomulu.seriler.TUFE.son_ay;
+  const oncekiSonAy = gomulu.seriler.TUFE.son_ay;
   ["TUFE", "UFE"].forEach(k => {
     const s = gomulu.seriler[k];
-    delete s.aylik[s.son_ay];
+    const hedef = canli.seriler[k].son_ay;          // yayindaki son ay
+    Object.keys(s.aylik).filter(ay => ay >= hedef).forEach(ay => delete s.aylik[ay]);
     s.son_ay = Object.keys(s.aylik).sort().pop();
   });
-  console.log("       kopyadaki son ay " + silinen + " -> " + gomulu.seriler.TUFE.son_ay +
-              " yapildi (eskimis dosya taklidi)");
+  console.log("       kopyadaki son ay " + oncekiSonAy + " -> " + gomulu.seriler.TUFE.son_ay +
+              " yapildi (yayindaki " + canli.seriler.TUFE.son_ay + "'den de eski)");
   const eskiHtml = tam.replace(m[1],
     JSON.stringify(gomulu).replace(/<\//g, "<\\/"));
 
@@ -123,7 +133,7 @@ function calistir(html) {
           kayit.kapsam.innerHTML.includes("siteden tazelendi"),
           kayit.kapsam.innerHTML.slice(-110));
   kontrol("kapsam yayindaki son aya yukseldi",
-          kayit.kapsam.innerHTML.includes(silinen.slice(0, 4)) &&
+          kayit.kapsam.innerHTML.includes(canli.seriler.TUFE.son_ay.slice(0, 4)) &&
           !kayit.kapsam.innerHTML.includes("dosyaya gömülü veri"),
           kayit.kapsam.innerHTML.slice(-110));
   kontrol("cetvel yeniden hesaplandi", kayit.govde.innerHTML !== oncekiCetvel);
