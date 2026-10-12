@@ -275,11 +275,35 @@ Token'ı sunucuya koyarken `read -s` kullanıldı; şifre ne ekrana basıldı ne
 kabuk geçmişine yazıldı. **Token'a bir daha dokunma:** içeriğini yazdırma,
 sohbete kopyalama, scp etme.
 
-**Henüz görülmeyen tek şey:** cron'un KENDİLİĞİNDEN çalıştığı. Betik elle
-çalıştırılıp doğrulandı, sunucunun `cron` servisi `active`, crontab kayıtlı —
-ama zamanı gelince kendi uyandığı 03.09.2026 itibarıyla gözlenmedi. İlk
-fırsat 04.09.2026 sabahı 10:05 TR. Doğrulama:
-`tail -3 ~/nafaka-tetikle.log` — o saate ait bir "tetiklendi" satırı olmalı.
+**✅ CRON KENDİLİĞİNDEN ÇALIŞTI — 09.09.2026'da ölçüldü.** Maaş haczi
+projesinde çalışırken sunucudaki log okundu; **beş sabahın beşinde de**
+kendi uyanmış:
+
+```
+2026-09-04 07:05:03 UTC | tetiklendi (HTTP 204)
+2026-09-05 07:05:05 UTC | tetiklendi (HTTP 204)
+2026-09-06 07:05:03 UTC | tetiklendi (HTTP 204)
+2026-09-07 07:05:03 UTC | tetiklendi (HTTP 204)
+2026-09-08 07:05:03 UTC | tetiklendi (HTTP 204)
+```
+
+`cron` servisi `active`, crontab kayıtlı. Yani **tetikleme zinciri kapandı** —
+03.09'da açık kalan tek halka buydu.
+
+**✅ ZİNCİR GERÇEK VERİYLE ÇALIŞTI — 12.10.2026'da ölçüldü.** Eylül verisi
+kimse dokunmadan geldi: sunucu 05.10.2026 07:05 UTC'de tetikledi, bot 07:06'da
+`veri: TÜİK 2026-09` commit'ini attı (TÜFE ort12 %31,49 · Yİ-ÜFE ort12 %27,81).
+3 ve 4 Ekim çalışmaları "veri değişmemiş" dedi — 3 Ekim cumartesiydi, TÜİK
+pazartesi yayımladı. Yani **ay başı hafta sonuna denk gelirse veri 5'inde
+gelebilir; 3-8 penceresi bunu karşılıyor.** Testler 211/211.
+Ayrıca GitHub `schedule` artık **çalışıyor** (Eylül'den beri günde 2 kez
+kendiliğinden tetikleniyor, `cron-sinama.yml` de atıyor). Sunucu yine de
+asıl tetikleyici olarak kalsın — schedule'ın neden bir ay ölü kaldığı bilinmiyor.
+
+**Eski not (artık kapandı):** tetiklemenin *yeni veri geldiği gün* işe yaradığı.
+3 Eylül'deki çekim elle tetiklenmişti; otomatik tetiklemenin gerçek veriyi
+yakaladığı ilk fırsat **3 Ekim 2026**. O gün `veri/endeksler.json`'a
+2026-09 verisinin kendiliğinden düşmüş olması beklenir.
 
 **Token'a dokunma:** içeriğini yazdırma, sohbete kopyalama, scp etme.
 Kullanıcı kendisi koyar.
