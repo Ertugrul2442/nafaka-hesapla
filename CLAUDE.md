@@ -548,17 +548,26 @@ soruldu, cevap beklenmeden yapılmasın.
 
 ## Hesap kuralı
 
-Yıl dönümünde uygulanacak oran **her zaman yıl dönümünden bir önceki ayın**
-oranı. Sebep: o ay, tamamlanmış son 12 ayı kapsıyor (Ocak yıl dönümü → Aralık
-oranı → tam takvim yılı).
+**12.10.2026'DAN BERİ: yıl dönümü ayının KENDİ oranı** (`referans: "ayni"`).
+Adliyeden istek geldi: "Haziran seçilince Mayıs geliyor, seçilen ay gelsin."
+Haziran başlangıçlı dosyada her Haziran artışı o yılın Haziran oranıyla
+yapılıyor. Değişen tek şey `sablon.html`'deki `referans:"ayni"` satırı +
+dipnot; **bitiş tarihine dokunulmadı** (istek buydu). Nöbetçi test hem
+`"ayni"`yi arıyor hem `"onceki"`nin geri sızmadığını yokluyor.
 
-Bu bir seçenekti, **25.08.2026'da kullanıcı isteğiyle arayüzden kaldırıldı**
-("gerek yok, zaten hep önceki ay kullanılır"). Motordaki `referans: "ayni"`
-yolu duruyor — iki satır, testleri yazılı — bir gün karar lafzı farklı olursa
-tek satırla geri açılır. Arayüze sızmasın diye nöbetçi test var.
+Sonucu: bir ayın artışı, o ayın oranı TÜİK'te çıkınca (ertesi ayın 3'ü)
+hesaplanabiliyor. Bitiş varsayılan olarak son veri ayında durduğu için normal
+kullanımda uyarı çıkmıyor; biri bitişi ileri alırsa mevcut "oran elimizde yok,
+hesap durduruldu" uyarısı çıkıyor.
 
-Doğrulanmış örnek: Ocak 2022'de 1.000 ₺, TÜFE 12 aylık ortalama, önceki ay kuralı
-→ 1.000 × 1,7231 × 1,5386 × 1,5851 × 1,3488 = **5.668,14 ₺** (2026 dönemi).
+Ölçülen fark (Haziran 2023, 1.000 ₺, TÜFE ort12, bitiş Eylül 2026):
+önceki ay kuralı 3.133,29 ₺ (Mayıs oranları) → aynı ay kuralı **3.121,58 ₺**
+(Haziran 2024 %65,07 · Haziran 2025 %43,23 · Haziran 2026 %32,03).
+
+**Eski kural (25.08–12.10.2026):** bir önceki ayın oranı (Ocak yıl dönümü →
+Aralık). Motorda varsayılan olarak hâlâ duruyor, testleri yazılı; geri
+dönülmek istenirse `sablon.html`'de tek kelime + nöbetçi test.
+O kuralla doğrulanmış örnek: Ocak 2022'de 1.000 ₺ → **5.668,14 ₺** (2026 dönemi).
 
 ## Sıradaki işler (yapılmadı, sorulmalı)
 

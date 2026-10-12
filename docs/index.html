@@ -444,7 +444,7 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
     <p><strong>Veri kaynağı.</strong> TÜİK Veri Portalı, resmî aylık fiyat endeksi serileri. TÜİK yeni ayı her ayın 3'ünde yayımlıyor; bu sayfa onu kendiliğinden alıp güncelliyor. <span id="kunye" class="kunye"></span></p>
     <p><strong>“On iki aylık ortalama” ne demek.</strong> Son 12 ayın endeks ortalamasının, ondan önceki 12 ayın ortalamasına göre değişimi. Tek bir ayın sıçramasından az etkilendiği için nafaka kararlarında en sık bu ölçü geçer. “Yıllık” ise yalnız o ayın, geçen yılın aynı ayına göre değişimidir.</p>
     <p><strong>İnternetsiz kullanım ve güncel kalma.</strong> Sayfanın tamamı tek dosya: veri de hesap da içinde. İndirdiğin dosyayı çift tıklayarak açabilir, USB'yle taşıyabilir, e-postayla gönderebilirsin. Dosya her açılışta veriyi bu siteden tazelemeye çalışır ve <strong>indirdiğini hatırlar</strong>: bir kez internet gördüğü yerde açıldıysa, sonradan ağa hiç çıkamasa bile o veriyle çalışmaya devam eder. Sağ üstte hangi verinin kullanıldığı yazar. Veri gerçekten eskirse en üstte uyarı çıkar; TÜİK oranı açıkladığı hâlde dosyaya gelmiyorsa “Elle oran ekle” bölümünden girebilirsin.</p>
-    <p><strong>Artışta hangi ayın oranı uygulanır.</strong> Yıl dönümünden bir önceki ayın oranı. O ay, tamamlanmış son on iki ayı kapsar: Ocak yıl dönümünde Aralık oranı uygulanır ve tam bir takvim yılına denk gelir. Cetvelde her artışın hangi aya ait olduğu yazıyor.</p>
+    <p><strong>Artışta hangi ayın oranı uygulanır.</strong> Yıl dönümü ayının kendi oranı: Haziran'da başlayan nafakada her Haziran artışı, o yılın Haziran oranıyla yapılır. TÜİK bir ayın oranını ertesi ayın 3'ünde yayımladığı için o yılki artış, oran açıklanınca cetvele girer. Cetvelde her artışın hangi aya ait olduğu yazıyor.</p>
     <p><strong>Kurum bilgisayarında sorun mu var?</strong> <a href="https://ertugrul2442.github.io/nafaka-hesapla/kontrol.html">Bağlantı kontrolü sayfası</a> o bilgisayarın neye erişip neye erişemediğini ölçer. Engelli bir ağda kullanacaksan bu dosyayı da yanında taşı.</p>
     <p><strong>Bu bir hesap makinesidir, hukuki görüş değildir.</strong> Kararındaki artış maddesinin lafzı — hangi endeks, hangi oran, hangi tarih — sonucu değiştirir. Kararı okuyup seçenekleri ona göre ayarla.</p>
   </footer>
@@ -483,9 +483,10 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
      "onceki"  : yildonumunden bir onceki ay  (o ana kadar tamamlanan 12 ay)
      "ayni"    : yildonumu ayinin kendisi
 
-     VARSAYILAN VE ARAYUZDEKI TEK DAVRANIS "onceki". "ayni" arayuzde
-     gosterilmiyor; motorda duruyor cunku bir gun karar lafzi farkli olursa
-     tek satirla geri acilir ve testleri zaten yazili.                       */
+     ARAYUZDEKI TEK DAVRANIS "ayni" (12.10.2026'da adliyenin istegiyle
+     "onceki"den gecildi). Motorun varsayilani hala "onceki"; arayuz kurali
+     acikca "ayni" diye veriyor. "onceki" yolu ve testleri duruyor - bir gun
+     geri donulmek istenirse sablon.html'de tek satir.                      */
   function referansAy(yil, ay, kural) {
     return kural === "ayni" ? { yil: yil, ay: ay } : ayEkle(yil, ay, -1);
   }
@@ -851,9 +852,10 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
       : "Kararında “yıllık TÜFE/ÜFE oranında” yazıyorsa bunu seç.";
 
     var s = H.hesapla(AKTIF, {
-      // Artışta her zaman yıl dönümünden bir önceki ayın oranı kullanılır:
-      // o ay tamamlanmış son 12 ayı kapsar (Ocak yıl dönümü -> Aralık oranı).
-      endeks:endeks, oranTuru:oranTuru, referans:"onceki",
+      // Artışta yıl dönümü ayının kendi oranı kullanılır (Haziran başlangıç ->
+      // her Haziran artışında o Haziran'ın oranı). 12.10.2026'da adliyenin
+      // isteğiyle "önceki ay"dan buna geçildi.
+      endeks:endeks, oranTuru:oranTuru, referans:"ayni",
       baslangicYil:+$("basYil").value, baslangicAy:+$("basAy").value,
       baslangicTutar:+$("tutar").value,
       bitisYil:+$("bitYil").value, bitisAy:+$("bitAy").value

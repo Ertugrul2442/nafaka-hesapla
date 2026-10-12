@@ -30,9 +30,10 @@
      "onceki"  : yildonumunden bir onceki ay  (o ana kadar tamamlanan 12 ay)
      "ayni"    : yildonumu ayinin kendisi
 
-     VARSAYILAN VE ARAYUZDEKI TEK DAVRANIS "onceki". "ayni" arayuzde
-     gosterilmiyor; motorda duruyor cunku bir gun karar lafzi farkli olursa
-     tek satirla geri acilir ve testleri zaten yazili.                       */
+     ARAYUZDEKI TEK DAVRANIS "ayni" (12.10.2026'da adliyenin istegiyle
+     "onceki"den gecildi). Motorun varsayilani hala "onceki"; arayuz kurali
+     acikca "ayni" diye veriyor. "onceki" yolu ve testleri duruyor - bir gun
+     geri donulmek istenirse sablon.html'de tek satir.                      */
   function referansAy(yil, ay, kural) {
     return kural === "ayni" ? { yil: yil, ay: ay } : ayEkle(yil, ay, -1);
   }

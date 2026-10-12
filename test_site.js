@@ -163,7 +163,7 @@ const H = window.NafakaHesap;
 const bicim = new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 function beklenenSon(endeks) {
   const s = H.hesapla(window.ENDEKS_VERISI, {
-    endeks, oranTuru: "ort12", referans: "onceki",
+    endeks, oranTuru: "ort12", referans: "ayni",
     baslangicYil: 2020, baslangicAy: 1, baslangicTutar: 2000,
     bitisYil: +kayit.bitYil.value, bitisAy: +kayit.bitAy.value
   });
@@ -189,13 +189,16 @@ kayit.form.tetikle("input");
 kontrol("veri bitince uyari basildi", kayit.uyarilar.innerHTML.includes("uyari"),
         kayit.uyarilar.innerHTML.slice(0, 140));
 
-console.log("\n--- artis hep 'onceki ay' orani, secenek yok ---");
+console.log("\n--- artis hep yil donumu ayinin KENDI orani, secenek yok ---");
+// 12.10.2026: adliye istedi - Haziran baslangicta Haziran orani (eskiden Mayis).
 kontrol("referans secenegi arayuzden kaldirildi", !/name="referans"/.test(html));
-kontrol("hesap cagrisi 'onceki' sabitine baglanmis", /referans:"onceki"/.test(html));
-kontrol("cetvel Aralik oranini uyguluyor (Ocak yil donumu)",
-        kayit.govde.innerHTML.includes("Aralık 2025 oranı"),
+kontrol("hesap cagrisi 'ayni' sabitine baglanmis", /referans:"ayni"/.test(html));
+kontrol("eski 'onceki' baglantisi kalmadi", !/referans:"onceki"/.test(html));
+kontrol("cetvel Ocak oranini uyguluyor (Ocak yil donumu)",
+        kayit.govde.innerHTML.includes("Ocak 2026 oranı") &&
+        !kayit.govde.innerHTML.includes("Aralık 2025 oranı"),
         kayit.govde.innerHTML.slice(-300));
-kontrol("dipnot kurali aciklyor", html.includes("Yıl dönümünden bir önceki ayın oranı"));
+kontrol("dipnot kurali acikliyor", html.includes("Yıl dönümü ayının kendi oranı"));
 
 console.log("\n--- kimse kimsenin verisine karismiyor ---");
 kontrol("sayfa hicbir yere veri gondermiyor",
@@ -306,7 +309,7 @@ kontrol("aksan-uzeri her uc temada tanimli", uc === 3, "bulunan " + uc);
           guncel.kayit.kapsam.innerHTML.slice(-140));
   const H2 = window.NafakaHesap;
   const bek = H2.hesapla(taze, {
-    endeks: "TUFE", oranTuru: "ort12", referans: "onceki",
+    endeks: "TUFE", oranTuru: "ort12", referans: "ayni",
     baslangicYil: 2020, baslangicAy: 1, baslangicTutar: 2000,
     bitisYil: +guncel.kayit.bitYil.value, bitisAy: +guncel.kayit.bitAy.value
   });
@@ -390,11 +393,11 @@ kontrol("aksan-uzeri her uc temada tanimli", uc === 3, "bulunan " + uc);
           s1.kayit.elleYil.value === String(eksik.yil) && s1.kayit.elleAy.value === String(eksik.ay),
           s1.kayit.elleAy.value + "." + s1.kayit.elleYil.value);
 
-  // Eksik ayin orani ancak BIR SONRAKI ayda yil donumu olan bir dosyada kullanilir
-  // ("onceki ay" kurali). Gercekci senaryo: yil donumu Eylul, elimizde Temmuz'a
+  // Eksik ayin orani, yil donumu O AYIN KENDISINDE olan dosyada kullanilir
+  // ("ayni ay" kurali). Gercekci senaryo: yil donumu Agustos, elimizde Temmuz'a
   // kadar veri var, Agustos orani TUIK'te acik ama bize gelmemis.
-  const ydAy = eksik.ay % 12 + 1;                       // eksik ayin bir sonrasi
-  const ydYil = eksik.ay === 12 ? eksik.yil + 1 : eksik.yil;
+  const ydAy = eksik.ay;
+  const ydYil = eksik.yil;
   s1.kayit.basAy.value = String(ydAy);
   s1.kayit.bitYil.value = String(ydYil);
   s1.kayit.bitAy.value = String(ydAy);
