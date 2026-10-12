@@ -569,6 +569,32 @@ Aralık). Motorda varsayılan olarak hâlâ duruyor, testleri yazılı; geri
 dönülmek istenirse `sablon.html`'de tek kelime + nöbetçi test.
 O kuralla doğrulanmış örnek: Ocak 2022'de 1.000 ₺ → **5.668,14 ₺** (2026 dönemi).
 
+## İcra hesabı DENEMESİ (12.10.2026) — canlıda YOK
+
+Ertuğrul icra dairesinde nafaka alacağını herkesin farklı hesapladığını
+söyledi. İstediği: **ana sisteme eklemeden, yalnız kendisinin göreceği bir
+kopyada** iki şey: faizin işletilme yolu (her ay kendi vadesinden mi,
+toplamdan tek seferde mi; 365/360 gün) ve kısmi ödemelerin mahsubu
+(TBK 100 önce faize mi, önce anaparaya mı).
+
+- Klasör: `icra_deneme/` — **`.git/info/exclude` ile git'ten gizli**, depoya
+  ve siteye gitmiyor. `icra.js` (motor), `test_icra.js` (29 test, elle kurulmuş
+  formüllerle), `ek.html` + `arayuz.js` (bölüm), `yap.py` (`nafaka_artifact.html`
+  kopyasına ekleyip `nafaka_icra_deneme.html` üretir).
+- Özel artifact (yalnız Ertuğrul): https://claude.ai/code/artifact/c571798d-334d-41cf-900b-7d42be74bf2f
+- Örnek dosyada üç yöntem arasında **8 bin ₺'ye varan fark** çıktı
+  (324k / 320k / 315k) — "herkes farklı buluyor"un makul bir açıklaması.
+- **Faiz oranı belirsiz:** %9 (2006→) ve %24 (01.06.2024→, 8485 sayılı CBK)
+  biliniyor. AYM iptali + 7589 sayılı Kanun'la Eylül 2026 sonrası reeskont
+  tabanlı sistem geldiği **yalnız avukat bloglarında** okundu, doğrulanmadı.
+  Oranlar bu yüzden sayfada elle düzenlenebilir tablo.
+- Bekleyen: Ertuğrul'dan gerçek (isimsiz) bir icra dosyası + farklı kişilerin
+  bulduğu sonuçlar. Gelince yöntemler o rakamlarla sınanacak.
+- **Canlı sitede bulunan hata (düzeltilmedi, sorulacak):** telefonda (400 px)
+  sayfa yana taşıyor, 626 px. Sebep `.govde` tek sütuna düşünce `1fr`
+  (= minmax(auto,1fr)) tablonun genişliğine açılıyor. Kopyada
+  `minmax(0,1fr)` + `.govde > *{min-width:0}` ile düzeldi (400/400 ölçüldü).
+
 ## Sıradaki işler (yapılmadı, sorulmalı)
 
 - **Dosya kaydetme:** bir kişi birden çok nafaka dosyasıyla çalışıyorsa tutar
