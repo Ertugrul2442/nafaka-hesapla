@@ -583,11 +583,17 @@ toplamdan tek seferde mi; 365/360 gün) ve kısmi ödemelerin mahsubu
   kopyasına ekleyip `nafaka_icra_deneme.html` üretir).
 - Özel artifact (yalnız Ertuğrul): https://claude.ai/code/artifact/c571798d-334d-41cf-900b-7d42be74bf2f
 - Örnek dosyada üç yöntem arasında **8 bin ₺'ye varan fark** çıktı
-  (324k / 320k / 315k) — "herkes farklı buluyor"un makul bir açıklaması.
-- **Faiz oranı belirsiz:** %9 (2006→) ve %24 (01.06.2024→, 8485 sayılı CBK)
-  biliniyor. AYM iptali + 7589 sayılı Kanun'la Eylül 2026 sonrası reeskont
-  tabanlı sistem geldiği **yalnız avukat bloglarında** okundu, doğrulanmadı.
-  Oranlar bu yüzden sayfada elle düzenlenebilir tablo.
+  (%31 ile 328k / 324k / 320k) — "herkes farklı buluyor"un makul bir açıklaması.
+- **Yasal faiz oranları — RESMÎ KAYNAKTAN DOĞRULANDI (12.10.2026):**
+  %9 (01.01.2006→) · %24 (01.06.2024→, 8485 sayılı CBK) ·
+  **%31 (31.07.2026→)**. Dayanak: 7589 sayılı Kanun md. 10, RG 31.07.2026
+  sayı 33326, md. 26/c ile yayımı tarihinde yürürlükte (Resmî Gazete
+  metninden okundu). Yeni 3095/1: önceki yıl 31 Aralık TCMB reeskont
+  oranının %80'i; 30 Haziran'da 5+ puan fark varsa ikinci yarıda o.
+  TCMB tablosu: reeskont 20.12.2025'ten beri %38,75, 2026'da değişmemiş
+  → 38,75 × 0,8 = 31. Geçici madde yok, geriye yürümüyor; 31.07 öncesi
+  günler eski oranla. **Her Ocak yeni oran eklenmeli** (31.12.2026 reeskontu).
+  Oranlar sayfada yine elle düzenlenebilir tablo.
 - Bekleyen: Ertuğrul'dan gerçek (isimsiz) bir icra dosyası + farklı kişilerin
   bulduğu sonuçlar. Gelince yöntemler o rakamlarla sınanacak.
 - **Canlı sitede bulunan hata (düzeltilmedi, sorulacak):** telefonda (400 px)
