@@ -32,7 +32,9 @@ Bu oturumda üç iş yapıldı. Ayrıntıları aşağıdaki bölümlerde, burada
 **18.10.2026:** ana site baştan doğrulandı (960 dosya bağımsız hesapla
 birebir, veri TÜİK'in bilinen rakamlarıyla aynı, canlı = yerel). İcra
 dökümü doğrulandı ve iki gösterim kusuru düzeltildi → İcra bölümü.
-Yeni açık sorular: TBK 100 hangi okumayla · canlıdaki kuruş tutarsızlığı.
+Açık soru: TBK 100 hangi okumayla — **Ertuğrul icra dairesine soruyor,
+cevap bekleniyor** (İcra bölümünde "BEKLETİLİYOR"). Canlıdaki kuruş
+tutarsızlığı **kapandı, böyle kalıyor.**
 
 **Açık sorular (Ertuğrul'un cevabı bekleniyor, cevapsız yapma):**
 - İcra denemesine **masraf listesi** eklensin mi? (tarih + tutar + açıklama,
@@ -633,13 +635,22 @@ toplamdan tek seferde mi; 365/360 gün) ve kısmi ödemelerin mahsubu
   (2) "Gün" sütunu tamamen ödenmiş ayda bile hesap tarihine kadar sayıyordu
   (ör. 69 gün işleyen faize 1021 yazıyordu). Artık faizin fiilen işlediği
   gün + "10.03.2024'e kadar" notu. Testler **44/44**.
-- **Ölçülen yorum farkı (karar Ertuğrul'un, sorulmadı-yapılmadı):** TBK 100'ü
+- **⏸ BEKLETİLİYOR (18.10.2026):** Ertuğrul 19.10'da icra dairesine
+  soracak. Götürdüğü örnek: Ocak-Haziran 2025, her ay 10.000 ₺ (vade
+  ayın 1'i), %24 faiz, 01.07.2025'te 30.000 ₺ ödeme, hesap 01.07.2026.
+  Sayfanın yolu ("önce bütün faizler") → **42.377,42 ₺**; "ay ay kapat"
+  yolu → **42.090,21 ₺**; fark 287,21 ₺. Cevap gelmeden kodu değiştirme.
+  Cevap "ay ay" çıkarsa: `icra.js` `faizeOde`/`anaparayaOde` sırası
+  taksit başına birleştirilir + test; "bütün faizler" çıkarsa dokunma.
+- **Ölçülen yorum farkı:** TBK 100'ü
   sayfa "ödeme önce BÜTÜN ayların faizine, sonra en eski aydan anaparaya"
   diye uyguluyor. Öbür okuma "her ay ayrı borç (TBK 101): en eski ayın
   faizi + anaparası kapanmadan sonrakine geçme". 323 ödemeli vakada
   107'sinde 1 ₺'den büyük fark, en büyük **%1,8** (ay ay okuma hep daha
   düşük borç çıkarıyor). Hangisi uygulamada kabul görüyor — doğrulanmadı.
-- **Canlı sitede de aynı kuruş sorunu var (düzeltilmedi, sorulacak):**
+- **Canlı sitede de aynı kuruş sorunu var — KAPANDI, BÖYLE KALACAK
+  (Ertuğrul, 18.10.2026: "böyle kalsın"). Tekrar gündeme getirme;**
+  ancak bir kullanıcı somut şikâyet ederse açılır.
   `hesap.js` aylık tutarı yuvarlamadan taşıyor; cetvelde dönem toplamı
   ekrandaki aylık × ay sayısından kuruşlarla farklı (Haziran 2023, 2.000 ₺:
   12 × 4.623,83 = 55.485,96 olmalı, ekranda 55.486,02).
