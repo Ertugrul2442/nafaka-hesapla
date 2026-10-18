@@ -690,6 +690,27 @@ toplamdan tek seferde mi; 365/360 gün) ve kısmi ödemelerin mahsubu
 - **Kopyada olmayanlar:** masraf/harç/vekâlet ücreti, kıst ay (ay ortası
   başlangıç), birden çok çocuk / 18 yaş, sayfadaki "elle oran"ları icra
   bölümü görmüyor, durum saklanmıyor (sayfa kapanınca girilenler gider).
+- **MASRAF ARAŞTIRMASI — 18.10.2026, resmî metinlerden (tekrar araştırma):**
+  Henüz koda girmedi; Ertuğrul'a anlatıldı, icra dairesine sorulacaklar var.
+  | Kalem | Ne bulundu | Kaynak / güven |
+  |---|---|---|
+  | Masraflar kime ait | "bütün harç ve masraflar borçluya ait" | İİK 15 — kanun metni (mevzuat.gov.tr PDF) |
+  | Ödeme sırası | "Alacaklı ilk ödenen paradan masraflarını alabilir" → ödeme **önce masrafa** | İİK 59/3 — kanun metni |
+  | Vekâlet ücreti | icra memuru tarifeye göre hesaplar, **takip masraflarına dahil** | İİK 138/3 — kanun metni |
+  | Vekâlet tutarı | takip ≤ 56.250 ₺ → maktu **9.000 ₺** (asıl alacağı geçemez); üstü → 3. kısım dilimleri %16 (ilk 600k), %15 (600k), %14 (1,2M), %13 (1,2M), %11 (1,8M), %8 (2,4M), %5 (3M), %3 (3,6M), %2 (4,2M), %1; **borçlu ödeme süresinde öderse ¾** | AAÜT 2025-26 md. 11 + tablolar, RG 04.11.2025/33067 (TBB PDF'inden görsel okundu). 08.01 ve 28.03.2026 değişiklikleri icrayı değil md.10/14'ü ilgilendiriyor (ikincil kaynak) |
+  | AAÜT md. 9 | "hükmolunan nafakanın bir yıllık tutarı" — bu nafaka **DAVASI** için, icra takibi için değil | AAÜT md. 9 |
+  | Tahsil harcı 2026 | hacizden önce **%4,55** · haciz sonrası satıştan önce **%9,10** · satışla **%11,38** · **maaş haczinden %4,55** | 98 Seri No. Harç Tebliği, RG 31.12.2025/33124 (5. mük.), tarife görselden okundu |
+  | Başvurma harcı 2026 | **732,00 ₺** · haciz/teslim/satış harcı (daire dışı) 1.718,80 ₺ | aynı tebliğ |
+  | Peşin harç binde 5 | yalnız **"ilama dayanmayan"** takipte → **ilamlı nafaka takibinde alınmamalı** | Harçlar K. metni, ders notu alıntısıyla — icra dairesine teyit ettirilecek |
+  | Cezaevi harcı %2 | tahsil edilen paradan; ikincil kaynaklar "borçluya yüklenemez" diyor; AYM'de 2025/70 dosyası var, sonucu okunamadı (PDF 404) | doğrulanmadı |
+  | Tebligat 2026 | normal 265 ₺, hızlı 530 ₺ (04.02.2026) | tek haber sitesi — elle girilsin |
+  | Nafaka harç muafiyeti | md. 13/c "ayda 100 TL'yi geçmeyen" — bugün işlevsiz | Harçlar K. |
+  **TBK 102 (bekleyen soruyla ilgili, karar değil):** "Birden çok borç muaccel
+  ise ödeme ... ilk olarak takip edilen borç için; takip yapılmamışsa vadesi
+  ilk önce gelmiş borç için yapılmış olur." TBK 100: faiz/gider ödemesinde
+  gecikmiş borçlu kısmi ödemeyi ana borca saydıramaz. Metin "ay ay"
+  okumasını destekliyor gibi, ama tek takipte bütün aylar "aynı takip" —
+  uygulama sorusu açık, Ertuğrul'un cevabı bekleniyor.
 - **Harç araştırması (resmî metinden, Harçlar K. md. 13/c):** nafaka
   takibinde muafiyet yalnız "ayda 100 YTL'yi geçmeyen nafaka" için —
   1980'den kalma, bugün pratikte hiçbir dosyaya uymuyor; yani nafaka
