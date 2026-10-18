@@ -334,6 +334,17 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
 .icra tfoot td{border-top:1px solid var(--cizgi-kalin);border-bottom:none;font-weight:600;background:var(--yuzey-ic)}
 .icra td.sifir{color:var(--ara)}
 .icra td.sayi small{display:block;font-size:11px;color:var(--ara);white-space:nowrap}
+.icra td.donem small{display:block;font-size:11.5px;color:var(--ara);font-weight:400;margin-top:1px}
+.satirListe .masrafSat{display:grid;grid-template-columns:1fr 92px 28px;gap:6px;align-items:center;
+  padding-bottom:6px;border-bottom:1px dashed var(--cizgi)}
+.satirListe .masrafSat input{padding:7px 8px;font-size:13px}
+.satirListe .masrafSat .acik{grid-column:1/3}
+.ekleSira{display:flex;flex-wrap:wrap;gap:6px}
+.icra .tik{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;font-weight:400;cursor:pointer}
+.icra .tik input{width:auto;margin-top:3px}
+#icVekKutu{display:grid;gap:6px;margin-top:8px}
+#icVekKutu[hidden]{display:none}
+#icVekKutu > label:not(.tik){font-size:13px;font-weight:500;margin:4px 0 -2px}
 </style>
 
 <div class="sayfa">
@@ -533,6 +544,32 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
         </div>
 
         <div class="alan">
+          <span class="grupBaslik">Masraflar (harç, tebligat, posta…)</span>
+          <div class="satirListe" id="icMasraflar"></div>
+          <div class="ekleSira">
+            <button type="button" class="ekle" id="icMasrafEkle">Masraf ekle</button>
+            <button type="button" class="ekle" id="icBasvuruEkle">Başvurma harcı (2026: 732 ₺)</button>
+          </div>
+          <p class="not">Harç ve masraflar borçluya aittir (İİK 15). Her ödeme, seçtiğin yöntemden bağımsız olarak <b>önce o tarihe kadar yapılmış masraflara</b> düşer, kalanı faiz ve anaparaya gider (İİK 59/3). Masrafa faiz işletilmez. Başvurma harcı 732 ₺ 2026 tarifesinden (98 Seri No. Harç Tebliği); düğme bu tutarı yalnız 2026'da açılan takipte koyar, başka yılda tutarı boş bırakır, o yılın tutarını sen yazarsın. Tebligat ve posta tutarlarını dosyadaki makbuzdan gir.</p>
+        </div>
+
+        <div class="alan">
+          <span class="grupBaslik">Vekâlet ücreti</span>
+          <label class="tik"><input type="checkbox" id="icVekil"> Takip avukatla yapıldı, tarifeden hesapla</label>
+          <div id="icVekKutu" hidden>
+            <label for="icVekTarih">Takip tarihi</label>
+            <input id="icVekTarih" type="date">
+            <label for="icVekTutar">Takip tutarı (₺)</label>
+            <input id="icVekTutar" type="number" min="0" step="0.01" inputmode="decimal">
+            <label for="icVekAsil">Bunun asıl alacak kısmı (₺)</label>
+            <input id="icVekAsil" type="number" min="0" step="0.01" inputmode="decimal">
+            <button type="button" class="ekle" id="icVekDoldur">Bu hesaptaki anapara ve faizle doldur</button>
+            <label class="tik"><input type="checkbox" id="icVekSure"> Borçlu ödeme süresi içinde ödedi (ücretin ¾'ü)</label>
+            <p class="not" id="icVekNot"></p>
+          </div>
+        </div>
+
+        <div class="alan">
           <span class="grupBaslik">Yasal faiz oranları (yıllık %)</span>
           <div class="satirListe" id="icOranlar"></div>
           <button type="button" class="ekle" id="icOranEkle">Oran dönemi ekle</button>
@@ -584,6 +621,26 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
           </div>
         </section>
 
+        <section class="cetvel" id="icMasrafBolum" hidden>
+          <div class="cetvelUst">
+            <h2>Masraflar</h2>
+            <span id="icMasrafAlt"></span>
+          </div>
+          <div class="kaydir">
+            <table>
+              <thead><tr>
+                <th scope="col">Masraf</th>
+                <th scope="col">Tarih</th>
+                <th scope="col">Tutar</th>
+                <th scope="col">Ödenen</th>
+                <th scope="col">Kalan</th>
+              </tr></thead>
+              <tbody id="icMasrafDokum"></tbody>
+              <tfoot id="icMasrafToplam"></tfoot>
+            </table>
+          </div>
+        </section>
+
         <section class="cetvel">
           <div class="cetvelUst">
             <h2>Ödemeler nereye düşüldü</h2>
@@ -594,6 +651,7 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
               <thead><tr>
                 <th scope="col">Tarih</th>
                 <th scope="col">Ödenen</th>
+                <th scope="col">Masrafa</th>
                 <th scope="col">Faize</th>
                 <th scope="col">Anaparaya</th>
                 <th scope="col">İleri aylara</th>
@@ -1261,8 +1319,15 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
      faizDonemleri: [{ bas:"2006-01-01", oran:9 }, { bas:"2024-06-01", oran:24 }],
      faizYontemi: "taksit" | "toplu",
      gunYil:      365 | 360,
-     mahsup:      "tbk100" | "anapara"      // yalniz faizYontemi "taksit" iken
-   }                                                                          */
+     mahsup:      "tbk100" | "anapara",     // yalniz faizYontemi "taksit" iken
+     masraflar:   [{ tarih:"2025-01-15", tutar:732, aciklama:"Başvurma harcı" }, ...]
+   }
+
+   Masraf: harc ve masraflar borcluya aittir (IIK 15); "Alacakli ilk odenen paradan
+   masraflarini alabilir" (IIK 59/3) -> her odeme, YONTEMDEN BAGIMSIZ olarak, once
+   o gune kadar yapilmis masraflara (en eskiden) duser, artani yonteme gore dagitilir.
+   Vekalet ucreti de takip masrafina dahildir (IIK 138/3).
+   Masrafa faiz ISLETILMEZ: kanunda acik hukum bulunamadi, sorulacak (18.10.2026). */
 (function (kok) {
   "use strict";
 
@@ -1335,8 +1400,33 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
     if (atlanan.length) {
       uyarilar.push(atlanan.length + " ödeme hesap tarihinden sonra olduğu için hesaba katılmadı.");
     }
-    return { donemler: donemler, T: T, taksitler: taksitler, odemeler: odemeler,
+    // Masraflar: tutari girilmemis satir henuz yazilmakta olan satirdir, atlanir.
+    // Tarihsiz ya da hesap tarihinden sonraki masraf atlanir AMA sessizce degil.
+    var masrafTarihsiz = 0, masrafSonra = 0;
+    var masraflar = (girdi.masraflar || []).filter(function (m) {
+      if (!m || !(+m.tutar > 0)) return false;
+      if (!m.tarih) { masrafTarihsiz++; return false; }
+      if (gun(m.tarih) > T) { masrafSonra++; return false; }
+      return true;
+    }).map(function (m, i) {
+      return { sira: i, tarih: m.tarih, g: gun(m.tarih), tutar: +m.tutar, kalan: +m.tutar,
+               aciklama: m.aciklama || "Masraf", kaynak: [] };
+    }).sort(function (a, b) { return a.g - b.g || a.sira - b.sira; });
+    if (masrafTarihsiz) uyarilar.push(masrafTarihsiz + " masrafın tarihi girilmediği için hesaba katılmadı.");
+    if (masrafSonra) uyarilar.push(masrafSonra + " masraf hesap tarihinden sonra olduğu için hesaba katılmadı.");
+    return { donemler: donemler, T: T, taksitler: taksitler, odemeler: odemeler, masraflar: masraflar,
              gunYil: +girdi.gunYil || 365, uyarilar: uyarilar };
+  }
+
+  // Odemenin once masraflara (odeme gunune kadar yapilmis, en eskiden) dusen kismi. IIK 59/3.
+  function masrafaOde(h, o, st) {
+    var odenen = 0;
+    h.masraflar.forEach(function (m) {
+      if (m.g > o.g) return;
+      var x = Math.min(m.kalan, st.kalan);
+      if (x > 0) { m.kalan -= x; st.kalan -= x; odenen += x; kaynakYaz(m, o.tarih, x, 0); }
+    });
+    return odenen;
   }
 
   /* ---- Yontem 1: her taksit kendi vadesinden faiz yurutur ---- */
@@ -1358,7 +1448,9 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
     var odemeKayit = [];
     h.odemeler.forEach(function (o) {
       islet(o.g);
-      var kalan = o.tutar, faize = 0, anaparaya = 0, ileri = 0;
+      var st = { kalan: o.tutar };
+      var masrafa = masrafaOde(h, o, st);
+      var kalan = st.kalan, faize = 0, anaparaya = 0, ileri = 0;
       var vadesiGelen = h.taksitler.filter(function (k) { return k.g <= o.g; });
       var gelecek = h.taksitler.filter(function (k) { return k.g > o.g; });
 
@@ -1384,7 +1476,7 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
       else { faizeOde(); anaparayaOde(vadesiGelen); }       // TBK 100
       anaparayaOde(gelecek, true);                            // pesin odeme
 
-      odemeKayit.push({ tarih: o.tarih, tutar: o.tutar, faize: faize,
+      odemeKayit.push({ tarih: o.tarih, tutar: o.tutar, masrafa: masrafa, faize: faize,
                         anaparaya: anaparaya, ileri: ileri, artan: kalan });
     });
     islet(h.T);
@@ -1410,7 +1502,9 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
     // Odemeler sirayla, en eski taksitten baslayarak dogrudan anaparadan dusulur.
     var artan = 0;
     h.odemeler.forEach(function (o) {
-      var kalan = o.tutar;
+      var st = { kalan: o.tutar };
+      var masrafa = masrafaOde(h, o, st);
+      var kalan = st.kalan;
       h.taksitler.forEach(function (k) {
         var x = Math.min(k.kalan, kalan);
         if (x > 0) {
@@ -1419,7 +1513,8 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
         }
       });
       artan += kalan;
-      odemeKayit.push({ tarih: o.tarih, tutar: o.tutar, faize: 0, anaparaya: o.tutar - kalan, ileri: 0, artan: kalan });
+      odemeKayit.push({ tarih: o.tarih, tutar: o.tutar, masrafa: masrafa, faize: 0,
+                        anaparaya: o.tutar - masrafa - kalan, ileri: 0, artan: kalan });
     });
     var kalanToplam = h.taksitler.reduce(function (t, k) { return t + k.kalan; }, 0);
     var ortVade = null, faiz = 0;
@@ -1459,21 +1554,31 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
     });
     function top(alan) { return kurus(satirlar.reduce(function (t, k) { return t + k[alan]; }, 0)); }
     var odemeler = odemeKayit.map(function (o) {
-      var faize = kurus(o.faize), ileri = kurus(o.ileri), art = kurus(o.artan);
-      return { tarih: o.tarih, tutar: o.tutar, faize: faize, ileri: ileri, artan: art,
-               anaparaya: kurus(o.tutar - faize - ileri - art) };
+      var masrafa = kurus(o.masrafa || 0), faize = kurus(o.faize), ileri = kurus(o.ileri), art = kurus(o.artan);
+      return { tarih: o.tarih, tutar: o.tutar, masrafa: masrafa, faize: faize, ileri: ileri, artan: art,
+               anaparaya: kurus(o.tutar - masrafa - faize - ileri - art) };
     });
+    var masraflar = h.masraflar.map(function (m) {
+      var tutar = kurus(m.tutar), odenen = kurus(m.tutar - m.kalan);
+      return { tarih: m.tarih, aciklama: m.aciklama, tutar: tutar, odenen: odenen,
+               kalan: kurus(tutar - odenen),
+               kaynak: m.kaynak.map(function (x) { return { tarih: x.tarih, tutar: kurus(x.anapara) }; }) };
+    });
+    var kalanMasraf = kurus(masraflar.reduce(function (t, m) { return t + m.kalan; }, 0));
     var kalanAnapara = top("kalan"), kalanFaiz = top("faizKalan");
     return {
       taksitler: satirlar,
       odemeler: odemeler,
+      masraflar: masraflar,
+      toplamMasraf: kurus(masraflar.reduce(function (t, m) { return t + m.tutar; }, 0)),
+      kalanMasraf: kalanMasraf,
       toplamTaksit: top("tutar"),
       odenen: kurus(odemeKayit.reduce(function (t, o) { return t + o.tutar; }, 0)),
       kalanAnapara: kalanAnapara,
       faizToplam: top("faizToplam"),
       faizOdenen: top("faizOdenen"),
       kalanFaiz: kalanFaiz,
-      toplamAlacak: kurus(kalanAnapara + kalanFaiz),
+      toplamAlacak: kurus(kalanAnapara + kalanFaiz + kalanMasraf),
       fazlaOdeme: kurus(artan),
       uyarilar: h.uyarilar
     };
@@ -1503,7 +1608,43 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
     return liste;
   }
 
-  var api = { hesapla: hesapla, taksitUret: taksitUret, faizHesapla: faizHesapla, gun: gun, tarih: tarih };
+  /* Icra takibinde avukatlik ucreti - 2025-2026 AAUT (RG 04.11.2025/33067) md. 11 ve
+     ucuncu kisim tablosu (TBB PDF'inden okundu, 18.10.2026):
+       takip miktari <= 56.250 TL -> maktu 9.000 TL, ama asil alacagi gecemez (md. 11/1)
+       ustu -> ucuncu kisim dilimleri (56.250 x %16 = 9.000: iki kural esikte bulusuyor)
+       borclu odeme suresi icinde oderse ucretin 3/4'u (md. 11/4)
+     Tarife her Kasim yenilenir; yururluk tarihi YURURLUK. Daha eski takipte eski tarife gecerli. */
+  var VEKALET = {
+    ad: "2025-2026 AAÜT", yururluk: "2025-11-04", maktu: 9000, esik: 56250,
+    dilimler: [[600000, 16], [600000, 15], [1200000, 14], [1200000, 13], [1800000, 11],
+               [2400000, 8], [3000000, 5], [3600000, 3], [4200000, 2], [Infinity, 1]]
+  };
+  function vekaletUcreti(takipTutari, asilAlacak, suresinde) {
+    var t = +takipTutari;
+    if (!(t > 0)) return null;
+    var asil = +asilAlacak > 0 ? +asilAlacak : t;
+    var r = { takipTutari: t, asilAlacak: asil, maktu: t <= VEKALET.esik, dilimler: [],
+              suresinde: !!suresinde, tarife: VEKALET.ad, yururluk: VEKALET.yururluk };
+    var ucret;
+    if (r.maktu) {
+      ucret = Math.min(VEKALET.maktu, asil);
+      r.kirpildi = asil < VEKALET.maktu;
+    } else {
+      var kalan = t; ucret = 0;
+      VEKALET.dilimler.forEach(function (d) {
+        if (kalan <= 0) return;
+        var p = Math.min(kalan, d[0]);
+        r.dilimler.push({ tutar: p, oran: d[1], ucret: kurus(p * d[1] / 100) });
+        ucret += p * d[1] / 100; kalan -= p;
+      });
+    }
+    r.tam = kurus(ucret);
+    r.ucret = r.suresinde ? kurus(r.tam * 3 / 4) : r.tam;
+    return r;
+  }
+
+  var api = { hesapla: hesapla, taksitUret: taksitUret, faizHesapla: faizHesapla, gun: gun, tarih: tarih,
+              vekaletUcreti: vekaletUcreti, VEKALET: VEKALET };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else kok.IcraHesap = api;
 })(this);
@@ -1550,9 +1691,22 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
         '<button type="button" class="sil" data-sil="' + i + '" aria-label="Satırı sil">×</button></div>';
     }).join("");
   }
+  // Masraf satiri: tarih + tutar + sil, altinda aciklama
+  var masraflar = [];
+  function masrafCiz() {
+    $("icMasraflar").innerHTML = masraflar.map(function (m, i) {
+      return '<div class="masrafSat">' +
+        '<input type="date" id="icMasrafT' + i + '" data-i="' + i + '" data-a="tarih" value="' + kacis(m.tarih) + '" aria-label="Masraf tarihi">' +
+        '<input type="number" id="icMasrafN' + i + '" data-i="' + i + '" data-a="tutar" step="0.01" value="' + kacis(m.tutar) + '" aria-label="Masraf tutarı (₺)">' +
+        '<button type="button" class="sil" data-sil="' + i + '" aria-label="Masrafı sil">×</button>' +
+        '<input type="text" class="acik" id="icMasrafA' + i + '" data-i="' + i + '" data-a="aciklama" value="' + kacis(m.aciklama) + '" placeholder="Açıklama (ör. tebligat)" aria-label="Masraf açıklaması">' +
+        "</div>";
+    }).join("");
+  }
   function listeleriCiz() {
     satirCiz($("icOdemeler"), odemeler, ["tarih", "tutar"]);
     satirCiz($("icOranlar"), oranlar, ["bas", "oran"]);
+    masrafCiz();
     $("icOrnekEt").hidden = !ornekMi;
   }
   function listeBagla(kutu, liste, odemeMi) {
@@ -1573,6 +1727,67 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
   }
   listeBagla($("icOdemeler"), function () { return odemeler; }, true);
   listeBagla($("icOranlar"), function () { return oranlar; }, false);
+  // Masraf listesi: aciklama metin alani oldugu icin listeBagla'nin sayi cevirmesi burada da gecerli
+  listeBagla($("icMasraflar"), function () { return masraflar; }, false);
+  $("icMasrafEkle").addEventListener("click", function () {
+    masraflar.push({ tarih: $("icTarih").value, tutar: NaN, aciklama: "" });
+    listeleriCiz(); hesapla();
+  });
+  // 732 TL yalniz 2026'da acilan takip icin dogru (98 Seri No. Teblig). Baska yilda
+  // yanlis rakam koymak yerine tutari bos birakip o yilin tutarini yazdiriyoruz.
+  var BASVURMA = { yil: "2026", tutar: 732 };
+  $("icBasvuruEkle").addEventListener("click", function () {
+    var tarih = ($("icVekil").checked && $("icVekTarih").value) || $("icTarih").value;
+    var yil = tarih.slice(0, 4);
+    masraflar.push(yil === BASVURMA.yil
+      ? { tarih: tarih, tutar: BASVURMA.tutar, aciklama: "Başvurma harcı (" + yil + " tarifesi)" }
+      : { tarih: tarih, tutar: NaN, aciklama: "Başvurma harcı (" + yil + " tutarını yaz)" });
+    listeleriCiz(); hesapla();
+  });
+
+  // ---- vekalet ucreti ----
+  $("icVekil").addEventListener("change", function () {
+    $("icVekKutu").hidden = !this.checked;
+    if (this.checked && !$("icVekTarih").value) $("icVekTarih").value = $("icTarih").value;
+  });
+  $("icVekDoldur").addEventListener("click", function () {
+    var g = girdiKur();
+    if (g.hata) return;
+    var T = $("icVekTarih").value || g.temel.hesapTarihi;
+    // Takip tarihindeki alacak: o gune kadar vadesi gelen taksitler + islemis faiz (masrafsiz)
+    var r = I.hesapla(Object.assign({}, g.temel, { hesapTarihi: T, masraflar: [] }));
+    $("icVekTutar").value = (r.kalanAnapara + r.kalanFaiz).toFixed(2);
+    $("icVekAsil").value = r.kalanAnapara.toFixed(2);
+    hesapla();
+  });
+  // Formdan vekalet ucretini hesapla; masraf olarak eklenecek kaydi ve aciklamayi dondur
+  function vekalet() {
+    if (!$("icVekil").checked) return null;
+    var tarih = $("icVekTarih").value;
+    var v = I.vekaletUcreti($("icVekTutar").value, $("icVekAsil").value, $("icVekSure").checked);
+    if (!v) { $("icVekNot").textContent = "Takip tutarını gir (ya da düğmeyle bu hesaptan doldur)."; return null; }
+    var yazi;
+    if (v.maktu) {
+      yazi = "Takip tutarı " + tl(v.takipTutari) + ", " + tl(I.VEKALET.esik) + "'ye kadar olduğu için maktu ücret: " +
+        tl(I.VEKALET.maktu) + (v.kirpildi ? ", ama asıl alacağı geçemez → " + tl(v.tam) : "") + ".";
+    } else {
+      yazi = "Takip tutarı " + tl(v.takipTutari) + ", tarifenin üçüncü kısmına göre dilimli: " +
+        v.dilimler.map(function (d) { return tl(d.tutar) + " × %" + d.oran; }).join(" + ") + " = " + tl(v.tam) + ".";
+    }
+    if (v.suresinde) yazi += " Ödeme süresi içinde ödendiği için ¾'ü: " + tl(v.ucret) + ".";
+    yazi += " Dayanak: " + v.tarife + " md. 11 (RG 04.11.2025/33067). İİK 138'e göre takip masrafına dahildir; masraf listesine " +
+      (tarih ? gunAyYil(tarih) : "tarihsiz") + " tarihiyle eklendi.";
+    var uyari = null;
+    if (tarih && tarih < v.yururluk) {
+      uyari = "Vekâlet ücreti: takip tarihi " + gunAyYil(tarih) + ", " + v.tarife + " ise " + gunAyYil(v.yururluk) +
+        "'ten beri yürürlükte. Bu takipte o tarihteki eski tarife geçerli; hesaplanan tutar yanlış olabilir.";
+    }
+    $("icVekNot").textContent = yazi;
+    return { masraf: { tarih: tarih, tutar: v.ucret, aciklama: "Vekâlet ücreti (" + v.tarife + " md. 11)" }, uyari: uyari };
+  }
+  ["icVekTarih", "icVekTutar", "icVekAsil", "icVekSure", "icVekil"].forEach(function (id) {
+    $(id).addEventListener("input", hesapla); $(id).addEventListener("change", hesapla);
+  });
   $("icOdemeEkle").addEventListener("click", function () {
     odemeler.push({ tarih: $("icTarih").value, tutar: NaN });
     ornekMi = false; listeleriCiz(); hesapla();
@@ -1596,6 +1811,12 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
     var ilkY = +$("icIlkYil").value, ilkA = +$("icIlkAy").value;
     var ilkKod = ilkY + "-" + (ilkA < 10 ? "0" + ilkA : ilkA);
     var taksitler = I.taksitUret(nafaka.satirlar, ilkKod, +$("icVade").value || 1);
+    var tutarsiz = masraflar.filter(function (m) { return !(m.tutar > 0); }).length;
+    if (tutarsiz) uyarilar.push(tutarsiz + " masrafın tutarı girilmedi, hesaba katılmadı.");
+    var masrafListe = masraflar.filter(function (m) { return m.tutar > 0; })
+      .map(function (m) { return { tarih: m.tarih, tutar: m.tutar, aciklama: m.aciklama || "Masraf" }; });
+    var vek = vekalet();
+    if (vek) { masrafListe.push(vek.masraf); if (vek.uyari) uyarilar.push(vek.uyari); }
     return {
       uyarilar: uyarilar,
       temel: {
@@ -1605,7 +1826,8 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
         faizDonemleri: oranlar.filter(function (o) { return o.bas && isFinite(o.oran); }),
         gunYil: +sec("icGun"),
         faizYontemi: sec("icYontem"),
-        mahsup: sec("icMahsup")
+        mahsup: sec("icMahsup"),
+        masraflar: masrafListe
       }
     };
   }
@@ -1646,6 +1868,7 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
       ["Yapılan ödeme", tl(s.odenen)],
       ["Kalan anapara", tl(s.kalanAnapara)],
       ["Kalan faiz", tl(s.kalanFaiz)],
+      ["Kalan masraf", tl(s.kalanMasraf)],
       ["Toplam alacak", tl(s.toplamAlacak), "bas"]
     ].map(function (k) {
       return '<div class="' + (k[2] || "") + '"><div class="et">' + k[0] + '</div><div class="dg">' + k[1] + "</div></div>";
@@ -1668,7 +1891,9 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
         '<td class="sayi">' + tl(r.kalanFaiz) + "</td>" +
         '<td class="sayi tutar">' + tl(r.toplamAlacak) +
         '<span class="fark refay ' + (fark > 0.005 ? "arti" : "") + '">' + farkYazi + "</span></td></tr>";
-    }).join("");
+    }).join("") + (s.kalanMasraf > 0.005
+      ? '<tr><td colspan="4"><small>Toplamlara ' + tl(s.kalanMasraf) + " kalan masraf dahil. Masraf her ödemeden önce düşüldüğü için üç yöntemde de aynıdır.</small></td></tr>"
+      : "");
 
     // taksit dokumu
     $("icDokumAlt").textContent = s.taksitler.length + " ay · yıllık " + t.gunYil + " gün" +
@@ -1697,12 +1922,26 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
         hucre(s.kalanAnapara) + "<td></td>" + hucre(s.faizToplam) + hucre(s.kalanFaiz) + "</tr>"
       : "";
 
+    // masraf dokumu (masraf yoksa bolum gizli)
+    $("icMasrafBolum").hidden = !s.masraflar.length;
+    $("icMasrafAlt").textContent = s.masraflar.length + " kalem · faiz işletilmez · ödemeden önce düşülür (İİK 59/3)";
+    $("icMasrafDokum").innerHTML = s.masraflar.map(function (m) {
+      var kaynak = m.kaynak.map(function (x) {
+        return gunAyYil(x.tarih) + " ödemesinden " + para.format(x.tutar) + (ornekMi ? " (örnek ödeme)" : "");
+      }).join("<br>");
+      return '<tr><td class="donem">' + kacis(m.aciklama) + (kaynak ? "<small>" + kaynak + "</small>" : "") + "</td>" +
+        '<td class="sayi">' + gunAyYil(m.tarih) + "</td>" + hucre(m.tutar) + hucre(m.odenen) + hucre(m.kalan) + "</tr>";
+    }).join("");
+    $("icMasrafToplam").innerHTML = s.masraflar.length
+      ? "<tr><td>Toplam</td><td></td>" + hucre(s.toplamMasraf) + hucre(s.toplamMasraf - s.kalanMasraf) + hucre(s.kalanMasraf) + "</tr>"
+      : "";
+
     // odeme dokumu
     $("icOdemeAlt").textContent = s.odemeler.length ? s.odemeler.length + " ödeme" : "ödeme girilmedi";
     $("icOdemeDokum").innerHTML = s.odemeler.map(function (o) {
-      return '<tr><td class="sayi">' + gunAyYil(o.tarih) + "</td>" + hucre(o.tutar) + hucre(o.faize) +
+      return '<tr><td class="sayi">' + gunAyYil(o.tarih) + "</td>" + hucre(o.tutar) + hucre(o.masrafa) + hucre(o.faize) +
         hucre(o.anaparaya) + hucre(o.ileri) + "</tr>";
-    }).join("") || '<tr><td colspan="5">Ödeme yok. Soldan “Ödeme ekle” ile girebilirsin.</td></tr>';
+    }).join("") || '<tr><td colspan="6">Ödeme yok. Soldan “Ödeme ekle” ile girebilirsin.</td></tr>';
 
     var tum = g.uyarilar.concat(s.uyarilar);
     $("icUyarilar").innerHTML = tum.map(function (u) { return '<div class="uyari">' + kacis(u) + "</div>"; }).join("");
