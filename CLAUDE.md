@@ -29,6 +29,11 @@ Bu oturumda üç iş yapıldı. Ayrıntıları aşağıdaki bölümlerde, burada
 3. **İcra hesabı DENEMESİ — canlıda YOK**, yalnız Ertuğrul'un özel
    artifact'ında. → "İcra hesabı DENEMESİ" bölümü.
 
+**18.10.2026:** ana site baştan doğrulandı (960 dosya bağımsız hesapla
+birebir, veri TÜİK'in bilinen rakamlarıyla aynı, canlı = yerel). İcra
+dökümü doğrulandı ve iki gösterim kusuru düzeltildi → İcra bölümü.
+Yeni açık sorular: TBK 100 hangi okumayla · canlıdaki kuruş tutarsızlığı.
+
 **Açık sorular (Ertuğrul'un cevabı bekleniyor, cevapsız yapma):**
 - İcra denemesine **masraf listesi** eklensin mi? (tarih + tutar + açıklama,
   elle girilir; TBK 100 sırasında faizle birlikte önce düşülür). Harcı
@@ -612,7 +617,32 @@ toplamdan tek seferde mi; 365/360 gün) ve kısmi ödemelerin mahsubu
   → Chrome'da aç (Playwright, `channel="chrome"`), hata/taşma bak → Artifact
   aracıyla **aynı dosya yolundan** yeniden yayınla (link aynı kalır; başka
   oturumdan yayınlanacaksa `url` parametresiyle).
-- Özel artifact (yalnız Ertuğrul, sürüm 4): https://claude.ai/code/artifact/c571798d-334d-41cf-900b-7d42be74bf2f
+- Özel artifact (yalnız Ertuğrul, **sürüm 5**, 18.10.2026): https://claude.ai/code/artifact/c571798d-334d-41cf-900b-7d42be74bf2f
+- **18.10.2026 doğrulaması — ay ay döküm (ölçüldü):** motordan bağımsız,
+  *gün gün* işleyen Python simülasyonu yazıldı; 503 rastgele dosyada
+  (13.351 ay satırı, 1.401 ödeme, dört yöntem kombinasyonu) kalan anapara,
+  faiz ve "hangi ödemeden ne düştü" notu karşılaştırıldı → en büyük fark
+  **1 kuruş** (yarım kuruş sınırında yuvarlama, 7 hücre). Sonra sayfa
+  Chrome'da açılıp 5 senaryoda **1.181 hücre** ekrandan okundu → 0 fark.
+  Betikler oturum karalama klasöründeydi (kalıcı değil); yeniden gerekirse
+  aynı yol: rastgele vaka üret → motor + gün gün sim → hücre hücre kıyas.
+  **İki kusur bulundu, düzeltildi (yalnız denemede):**
+  (1) Toplam satırı ve özet, satırların elle toplamından 8 kuruşa kadar
+  tutmuyordu — taksit yuvarlanmadan taşınıyordu. Artık taksit kuruşa
+  yuvarlı, her satır kuruşa yuvarlı, toplamlar o satırların toplamı.
+  (2) "Gün" sütunu tamamen ödenmiş ayda bile hesap tarihine kadar sayıyordu
+  (ör. 69 gün işleyen faize 1021 yazıyordu). Artık faizin fiilen işlediği
+  gün + "10.03.2024'e kadar" notu. Testler **44/44**.
+- **Ölçülen yorum farkı (karar Ertuğrul'un, sorulmadı-yapılmadı):** TBK 100'ü
+  sayfa "ödeme önce BÜTÜN ayların faizine, sonra en eski aydan anaparaya"
+  diye uyguluyor. Öbür okuma "her ay ayrı borç (TBK 101): en eski ayın
+  faizi + anaparası kapanmadan sonrakine geçme". 323 ödemeli vakada
+  107'sinde 1 ₺'den büyük fark, en büyük **%1,8** (ay ay okuma hep daha
+  düşük borç çıkarıyor). Hangisi uygulamada kabul görüyor — doğrulanmadı.
+- **Canlı sitede de aynı kuruş sorunu var (düzeltilmedi, sorulacak):**
+  `hesap.js` aylık tutarı yuvarlamadan taşıyor; cetvelde dönem toplamı
+  ekrandaki aylık × ay sayısından kuruşlarla farklı (Haziran 2023, 2.000 ₺:
+  12 × 4.623,83 = 55.485,96 olmalı, ekranda 55.486,02).
 - **Nasıl hesaplıyor (kararlar):** taksit = nafaka cetvelinden aylık tutar,
   vade = seçilen gün (ay kısaysa son gün). Basit faiz, faize faiz yok, gün
   sayısı `hesapTarihi - vade`. Oran dönemlere bölünür. TBK 100'de ödeme
