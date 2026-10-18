@@ -12,6 +12,39 @@ gözetimsiz çalışması ve kendini güncellemesi şart.
 **Yayında:** https://ertugrul2442.github.io/nafaka-hesapla/
 **Depo:** https://github.com/Ertugrul2442/nafaka-hesapla (herkese açık)
 **Claude artifact kopyası:** https://claude.ai/code/artifact/43dcbd79-3369-4582-b346-e7e72b5c398b
+(⚠ eski: hâlâ "önceki ay" kuralıyla; gerçek kullanıcılar GitHub sitesini
+kullandığı için güncellenmedi. İstenirse `nafaka_artifact.html` yeniden yayınlanır.)
+
+## ▶ YENİ OTURUM BURADAN BAŞLASIN — 12.10.2026'da kalınan yer
+
+Bu oturumda üç iş yapıldı. Ayrıntıları aşağıdaki bölümlerde, burada yalnız özet:
+
+1. **Bakım kontrolü — temiz.** Eylül verisi 05.10.2026'da kimse dokunmadan
+   geldi (sunucu tetikledi, bot commit'ledi). Testler geçiyor. GitHub
+   `schedule` da artık kendiliğinden çalışıyor. → "Tetikleme" bölümü.
+2. **CANLIYA GİDEN DEĞİŞİKLİK: artış kuralı "aynı ay" oldu** (adliye istedi:
+   "Haziran seçince Mayıs geliyor, seçilen ay gelsin"). Commit `216fce2`,
+   yayında doğrulandı. Testler **212/212** (56 motor + **106** sayfa + 21 veri
+   + 23 teşhis + 6 canlı). → "Hesap kuralı" bölümü.
+3. **İcra hesabı DENEMESİ — canlıda YOK**, yalnız Ertuğrul'un özel
+   artifact'ında. → "İcra hesabı DENEMESİ" bölümü.
+
+**Açık sorular (Ertuğrul'un cevabı bekleniyor, cevapsız yapma):**
+- İcra denemesine **masraf listesi** eklensin mi? (tarih + tutar + açıklama,
+  elle girilir; TBK 100 sırasında faizle birlikte önce düşülür). Harcı
+  otomatik hesaplamak **önerilmedi** — tutarlar her yıl değişiyor, tahsil
+  harcının kime yükleneceği doğrulanamadı.
+- **Canlı sitedeki telefon taşması** düzeltilsin mi? (aşağıda, İcra bölümünde)
+- Ertuğrul'dan **gerçek, isimsiz bir icra dosyası** + farklı kişilerin
+  bulduğu rakamlar bekleniyor. Gelince denemedeki üç yöntemle tek tek yeniden
+  üretilip farkın nereden çıktığı ölçülecek. Bu, denemenin canlıya alınıp
+  alınmayacağına karar verecek veri.
+
+**Takvim:**
+- **Kasım 3-8** — normal aylık güncelleme (Ekim verisi). Kendiliğinden gelmeli.
+- **Ocak 2027** — yasal faiz oranı değişebilir (31.12.2026 TCMB reeskontu
+  × 0,80). İcra denemesinin varsayılan oran tablosuna satır eklenmeli
+  (`icra_deneme/arayuz.js`, `oranlar` dizisi + `ek.html` notu).
 
 ## Durum (03.09.2026) — YAYINDA, GERÇEK KULLANICILARI VAR
 
@@ -39,20 +72,11 @@ açıldığı için `kontrol.html` çalıştırılmadı. Etkilediği tek özelli
 ekle" — kapalıysa sayfa zaten "kaydedilemedi" diyor, hesap yine doğru çalışıyor.
 Biri şikâyet ederse `kontrol.html` ile ölçülür.
 
-### ⏭ SIRADAKİ İŞ — 03.09.2026'da kaldığı yer
+### ~~SIRADAKİ İŞ — 03.09.2026~~ (KAPANDI)
 
-**Yarım kalan iş yok.** Tetikleyici sunucuya kuruldu ve uçtan uca
-doğrulandı (bkz. "Tetikleme neden sunucuya taşındı"). Site güncel, veri
-2026-08, testler 211/211.
-
-Takvimde iki olay var:
-
-1. **04.09.2026, 10:05 TR** — sunucudaki cron'un KENDİLİĞİNDEN çalıştığı ilk
-   an. Elle çalıştırılınca çalıştığı kanıtlandı ama kendi uyandığı henüz
-   görülmedi. Doğrulama: sunucuda `tail -3 ~/nafaka-tetikle.log`.
-   O saate ait "tetiklendi" satırı yoksa cron tarafında bir sorun var demektir.
-2. **03.10.2026** — TÜİK Eylül verisini yayımlıyor. Zincirin gerçek sınavı.
-   Ertesi gün canlı `veri.json`'un `son_ay`'ı `2026-09` olmalı.
+O günkü iki takvim olayı da gerçekleşti ve geçti: cron 04.09'dan beri
+kendiliğinden uyanıyor, Eylül verisi 05.10'da otomatik geldi. Güncel durum
+için en üstteki "YENİ OTURUM BURADAN BAŞLASIN" bölümüne bak.
 
 **Maliyet: 0 TL.** Sunucu yok, veritabanı yok, Supabase yok. Sayfa tamamen
 istemci tarafında çalışıyor; tek "arka uç" ayda bir çalışan GitHub Actions işi.
@@ -92,10 +116,9 @@ Düzeltilen iki kilitlenme için "Tuzaklar" 9. maddeye bak. Tetikleme için
 "Tetikleme neden sunucuya taşındı" bölümüne bak.
 
 **Yeni bir oturum buraya geldiğinde:** proje bakım modunda, kendiliğinden kod
-değiştirme — sayfayı gerçek insanlar kullanıyor. Ama **bir iş yarım:**
-sunucudaki tetikleyicinin token'ı ve crontab girişi konmadı. Ertuğrul
-kurduğunu söylerse doğrula (`~/nafaka-tetikle.log`), kurmadıysa aylık
-güncelleme elle yapılacak.
+değiştirme — sayfayı gerçek insanlar kullanıyor. (Eskiden burada "token ve
+crontab konmadı" yazıyordu; **kondu**, 03.09'da doğrulandı, 04.09'dan beri
+kendiliğinden çalışıyor.)
 
 **Seni harekete geçirecek şeyler:**
 1. **Ayın 3-8'i geçti ve sitedeki veri hâlâ eski.** ⚠ Bu durumda
@@ -141,7 +164,7 @@ Bu yüzden:
 | `oran_ekle.py` | Bir ayın oranını veri dosyasına elle ekler — **herkese ulaşsın diye**. Otomatik çekim tökezlerse kurtarma aracı. |
 | `.github/workflows/veri-guncelle.yml` | Aylık otomatik güncelleme. |
 | `test_hesap.js` | Hesap motoru (56 test) — `node test_hesap.js` |
-| `test_site.js` | Yayına giden sayfa (105 test) — `node test_site.js [dosya]` |
+| `test_site.js` | Yayına giden sayfa (106 test) — `node test_site.js [dosya]` |
 | `test_veri.py` | Veri güvenlik kontrolleri (21 test) — `py -3.13 test_veri.py` |
 | `kontrol.html` | Bağlantı teşhis sayfası. Bilerek **hiçbir dış kaynağı yok** (yazı tipi dahil) — ölçtüğü şey zaten dış erişim. `docs/kontrol.html`'e olduğu gibi kopyalanıyor. |
 | `test_kontrol.js` | Teşhis sayfası doğru teşhis koyuyor mu (23 test) — `node test_kontrol.js` |
@@ -513,10 +536,12 @@ panoya kopyalanan metne de geçiyor — hangi rakamın resmi olmadığı hep bel
 yine hesaba katılıyor ama "kaydedilemedi, sayfayı kapatınca kaybolur" deniyor.
 Bütün okuma/yazma `try/catch` içinde.
 
-**Tuzak:** Bir ayın oranı ancak **bir sonraki ayda yıl dönümü olan** dosyada
-kullanılır ("önceki ay" kuralı). Test yazarken buna dikkat — Ağustos oranını
-sınamak için başlangıç ayı Eylül olmalı, yoksa oran hiç sorgulanmaz ve test
-boşuna düşer (bu tuzağa düşüldü).
+**Tuzak (12.10.2026'da kural değişti, dikkat):** Bir ayın oranı ancak
+**yıl dönümü O AYDA olan** dosyada kullanılır ("aynı ay" kuralı). Ağustos
+oranını sınamak için başlangıç ayı **Ağustos** olmalı. (Eski "önceki ay"
+kuralında Eylül olması gerekiyordu; `test_site.js`'deki `ydAy`/`ydYil`
+buna göre güncellendi.) Yanlış ay seçilirse oran hiç sorgulanmaz ve test
+boşuna düşer — bu tuzağa bir kez düşüldü.
 
 ## Çok kullanıcı — neden sorun değil
 
@@ -578,10 +603,40 @@ toplamdan tek seferde mi; 365/360 gün) ve kısmi ödemelerin mahsubu
 (TBK 100 önce faize mi, önce anaparaya mı).
 
 - Klasör: `icra_deneme/` — **`.git/info/exclude` ile git'ten gizli**, depoya
-  ve siteye gitmiyor. `icra.js` (motor), `test_icra.js` (29 test, elle kurulmuş
-  formüllerle), `ek.html` + `arayuz.js` (bölüm), `yap.py` (`nafaka_artifact.html`
-  kopyasına ekleyip `nafaka_icra_deneme.html` üretir).
-- Özel artifact (yalnız Ertuğrul): https://claude.ai/code/artifact/c571798d-334d-41cf-900b-7d42be74bf2f
+  ve siteye gitmiyor. `icra.js` (motor), `test_icra.js` (**34 test**, elle
+  kurulmuş formüllerle — `node icra_deneme/test_icra.js`), `ek.html` +
+  `arayuz.js` (bölüm), `yap.py` (`nafaka_artifact.html` kopyasına ekleyip
+  `nafaka_icra_deneme.html` üretir).
+- **Güncelleme sırası:** düzenle → `node test_icra.js` → (ana şablon
+  değiştiyse önce kökte `py -3.13 site_yap.py`) → `py -3.13 icra_deneme/yap.py`
+  → Chrome'da aç (Playwright, `channel="chrome"`), hata/taşma bak → Artifact
+  aracıyla **aynı dosya yolundan** yeniden yayınla (link aynı kalır; başka
+  oturumdan yayınlanacaksa `url` parametresiyle).
+- Özel artifact (yalnız Ertuğrul, sürüm 4): https://claude.ai/code/artifact/c571798d-334d-41cf-900b-7d42be74bf2f
+- **Nasıl hesaplıyor (kararlar):** taksit = nafaka cetvelinden aylık tutar,
+  vade = seçilen gün (ay kısaysa son gün). Basit faiz, faize faiz yok, gün
+  sayısı `hesapTarihi - vade`. Oran dönemlere bölünür. TBK 100'de ödeme
+  önce birikmiş faize (en eski aydan), sonra anaparaya (en eski aydan), artan
+  gelecek taksite (peşin). "Toplu" yöntem: ödemeler doğrudan anaparadan,
+  kalana tutarla ağırlıklı ortalama vadeden tek faiz. Faiz oranı tablosunun
+  ilk satırından önceki günlere ilk oran uygulanır **ve uyarı basılır**.
+- **Kullanıcının yakaladığı iki kafa karışıklığı (12.10.2026), düzeltildi:**
+  (1) "Vade günü ayı ödenmiş mi sayıyor?" — saymıyor; ama vadesi hesap
+  tarihinden sonraya düşen taksit **sessizce** düşüyordu → artık uyarı var.
+  (2) "Ödenmeyen ilk ay Ocak ise Ocak ödenmiş mi?" — hayır, dahil; açıklama
+  "seçtiğin ay dahil" diye netleştirildi. Dökümde Ocak'ın "ödenmiş"
+  görünmesi **örnek ödemeden** geliyordu → artık her ayın altında
+  "16.06.2025 ödemesinden X anapara + Y faiz (örnek ödeme)" yazıyor.
+  **Ders:** kullanıcının "bu yanlış mı" dediği her yerde önce ölç; çoğu kez
+  hesap doğru, ama ekran nedenini anlatmıyor — asıl kusur o.
+- **Kopyada olmayanlar:** masraf/harç/vekâlet ücreti, kıst ay (ay ortası
+  başlangıç), birden çok çocuk / 18 yaş, sayfadaki "elle oran"ları icra
+  bölümü görmüyor, durum saklanmıyor (sayfa kapanınca girilenler gider).
+- **Harç araştırması (resmî metinden, Harçlar K. md. 13/c):** nafaka
+  takibinde muafiyet yalnız "ayda 100 YTL'yi geçmeyen nafaka" için —
+  1980'den kalma, bugün pratikte hiçbir dosyaya uymuyor; yani nafaka
+  takipleri harç öder. Tahsil harcının borçluya yüklenip yüklenemeyeceği
+  yalnız blogda okundu, doğrulanmadı.
 - Örnek dosyada üç yöntem arasında **8 bin ₺'ye varan fark** çıktı
   (%31 ile 328k / 324k / 320k) — "herkes farklı buluyor"un makul bir açıklaması.
 - **Yasal faiz oranları — RESMÎ KAYNAKTAN DOĞRULANDI (12.10.2026):**
@@ -609,7 +664,8 @@ toplamdan tek seferde mi; 365/360 gün) ve kısmi ödemelerin mahsubu
   başladılar — yani şartın ilk yarısı doldu, **ikincisi (şikâyet) hâlâ
   beklemede. Şikâyet gelmeden yapma.**
 
-- Birikmiş nafaka alacağı için yasal faiz hesabı.
+- ~~Birikmiş nafaka alacağı için yasal faiz hesabı~~ — **deneme olarak
+  yapıldı** (yukarıdaki "İcra hesabı DENEMESİ"), canlıya alınmadı.
 - Karar metninden tarih/tutar okuyup formu otomatik doldurma.
 - ~~Kendi alan adı~~ — **gerekmiyor**, adliye `github.io`'yu açtı (26.08.2026).
   Yalnız başka bir kurumda engel çıkarsa ve (a)/(b) yolları da yetmezse gündeme
