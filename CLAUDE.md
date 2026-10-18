@@ -618,7 +618,35 @@ O kuralla doğrulanmış örnek: Ocak 2022'de 1.000 ₺ → **5.668,14 ₺** (20
   Ekim artışı yapılmıyor + uyarı; siteden gelince ve elle girilince →
   Ekim taksiti 2.222,10 × 1,5 = 3.333,16. Aylık iş akışı `icra.html`'i
   yeniden kurmuyor, kurmasına gerek de yok (veriyi açılışta çekiyor).
-- Masraf hâlâ yok — Ertuğrul'a anlatıldı, test sonrası konuşulacak.
+- **MASRAF + VEKÂLET ÜCRETİ EKLENDİ (18.10.2026, commit `35a5063`):**
+  yalnız resmî metinden doğrulananlar. Masraf listesi (tarih/tutar/açıklama,
+  elle) → her ödeme, yöntemden bağımsız, **önce o tarihe kadarki masraflara**
+  düşer (İİK 59/3), masrafa faiz yok, toplam alacağa girer. Vekâlet: AAÜT
+  2025-26 md. 11 (`icra.js` `vekaletUcreti`, `VEKALET` tablosu); takip
+  tarihi < 04.11.2025 ise "eski tarife geçerli" uyarısı. "Başvurma harcı"
+  düğmesi 732 ₺'yi **yalnız 2026 takibinde** koyar, başka yılda tutarı boş
+  bırakır. Tarihsiz / tutarsız / hesap tarihinden sonraki masraf **uyarı
+  verir**, sessiz düşmez. **Bilerek eklenmedi:** tahsil harcı, peşin harç,
+  cezaevi harcı, tebligat tutarı (doğrulanmadı → sorulacak).
+  Doğrulama: testler **73/73**; gün gün simülasyona masraf eklendi, 534
+  vakada (1.078 masraf) masraf farkı 0; ekran 1.188 hücre 0 fark; elle
+  örnek (Ocak 2025 10.000 ₺, takip 01.02.2025, ödeme 01.03.2025 15.000)
+  → 9.265/9.997 masrafa, 572,05 faize, kalanı anaparaya — elle tuttu.
+  **Her Kasım:** yeni AAÜT → `VEKALET` güncelle. **Her Ocak:** yeni harç
+  tebliği → `BASVURMA` (`arayuz.js`) güncelle.
+- **YARIN (19.10) SORULACAKLAR — cevaplar gelince koda girecek:**
+  1. Kısmi ödeme aylara nasıl dağıtılıyor: A (önce bütün faizler) mı,
+     B (ay ay kapat) mı? Örnek 42.377,42 / 42.090,21. Dayanak var mı?
+  2. Nafaka (ilamlı) takibinde peşin harç (binde 5) alınıyor mu?
+  3. Tahsil harcı hesaba nasıl giriyor: borca ekleniyor mu, tahsilattan
+     mı kesiliyor? Maaş haczinde %4,55 mi?
+  4. Masrafa / vekâlet ücretine faiz işletiliyor mu?
+  5. Cezaevi harcı (%2) borçluya yükleniyor mu?
+  6. Vekâlet ücretinin "takip tutarı" neye göre: takip talebindeki toplam
+     mı, yalnız birikmiş taksitler mi? Takip sonrası yeni aylar eklenince
+     ücret yeniden hesaplanıyor mu?
+  7. Masraf ödemeden önce mi düşülüyor (İİK 59/3), yoksa dosya kapanışında mı?
+  8. Tebligat ücreti: hangi tutar (PTT 265 / e-tebligat)?
 
 Ertuğrul icra dairesinde nafaka alacağını herkesin farklı hesapladığını
 söyledi. İstediği: **ana sisteme eklemeden, yalnız kendisinin göreceği bir
@@ -636,7 +664,7 @@ toplamdan tek seferde mi; 365/360 gün) ve kısmi ödemelerin mahsubu
   → Chrome'da aç (Playwright, `channel="chrome"`), hata/taşma bak → Artifact
   aracıyla **aynı dosya yolundan** yeniden yayınla (link aynı kalır; başka
   oturumdan yayınlanacaksa `url` parametresiyle).
-- Özel artifact (yalnız Ertuğrul, **sürüm 5**, 18.10.2026): https://claude.ai/code/artifact/c571798d-334d-41cf-900b-7d42be74bf2f
+- Özel artifact (yalnız Ertuğrul, **sürüm 7**, 18.10.2026): https://claude.ai/code/artifact/c571798d-334d-41cf-900b-7d42be74bf2f
 - **18.10.2026 doğrulaması — ay ay döküm (ölçüldü):** motordan bağımsız,
   *gün gün* işleyen Python simülasyonu yazıldı; 503 rastgele dosyada
   (13.351 ay satırı, 1.401 ödeme, dört yöntem kombinasyonu) kalan anapara,
