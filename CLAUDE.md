@@ -26,7 +26,8 @@ Bu oturumda üç iş yapıldı. Ayrıntıları aşağıdaki bölümlerde, burada
    "Haziran seçince Mayıs geliyor, seçilen ay gelsin"). Commit `216fce2`,
    yayında doğrulandı. Testler **212/212** (56 motor + **106** sayfa + 21 veri
    + 23 teşhis + 6 canlı). → "Hesap kuralı" bölümü.
-3. **İcra hesabı DENEMESİ — canlıda YOK**, yalnız Ertuğrul'un özel
+3. **İcra hesabı DENEMESİ — 18.10.2026'dan beri ayrı linkte canlı**
+   (`docs/icra.html`, ana sayfadan bağlantı yok), ayrıca Ertuğrul'un özel
    artifact'ında. → "İcra hesabı DENEMESİ" bölümü.
 
 **18.10.2026:** ana site baştan doğrulandı (960 dosya bağımsız hesapla
@@ -601,7 +602,23 @@ Aralık). Motorda varsayılan olarak hâlâ duruyor, testleri yazılı; geri
 dönülmek istenirse `sablon.html`'de tek kelime + nöbetçi test.
 O kuralla doğrulanmış örnek: Ocak 2022'de 1.000 ₺ → **5.668,14 ₺** (2026 dönemi).
 
-## İcra hesabı DENEMESİ (12.10.2026) — canlıda YOK
+## İcra hesabı DENEMESİ (12.10.2026) — 18.10.2026'dan beri AYRI LİNKTE CANLI
+
+**Canlı deneme:** https://ertugrul2442.github.io/nafaka-hesapla/icra.html
+(Ertuğrul meslektaşlarına 19.10'da test ettirecek). Ana sayfadan
+**bağlantı yok**, `noindex`. Ana sayfa (`index.html`) değişmedi.
+- `icra_deneme/yap.py` artık iki yere yazıyor: `nafaka_icra_deneme.html`
+  (artifact) ve **`docs/icra.html`** (canlı). Değişiklikten sonra
+  `docs/icra.html`'i commit'le + push et, artifact'ı da yeniden yayınla.
+- **Yeni ay gelince kendiliğinden güncel:** icra bölümü artık üst bölümün
+  kullandığı veriyi (`window.NAFAKA_AKTIF` = siteden tazelenmiş + elle
+  girilen oranlar) okuyor; `yap.py` ana betiğin `tazele()`'sine kanca
+  takıyor. Önceden gömülü veriye bakıyordu → Kasım'da iki bölüm farklı
+  veriyle hesaplayacaktı (sessiz). Sahte Ekim 2026 ile ölçüldü: ağ yok →
+  Ekim artışı yapılmıyor + uyarı; siteden gelince ve elle girilince →
+  Ekim taksiti 2.222,10 × 1,5 = 3.333,16. Aylık iş akışı `icra.html`'i
+  yeniden kurmuyor, kurmasına gerek de yok (veriyi açılışta çekiyor).
+- Masraf hâlâ yok — Ertuğrul'a anlatıldı, test sonrası konuşulacak.
 
 Ertuğrul icra dairesinde nafaka alacağını herkesin farklı hesapladığını
 söyledi. İstediği: **ana sisteme eklemeden, yalnız kendisinin göreceği bir
@@ -706,7 +723,8 @@ toplamdan tek seferde mi; 365/360 gün) ve kısmi ödemelerin mahsubu
   beklemede. Şikâyet gelmeden yapma.**
 
 - ~~Birikmiş nafaka alacağı için yasal faiz hesabı~~ — **deneme olarak
-  yapıldı** (yukarıdaki "İcra hesabı DENEMESİ"), canlıya alınmadı.
+  yapıldı** (yukarıdaki "İcra hesabı DENEMESİ"), 18.10.2026'dan beri
+  ayrı linkte (`icra.html`) deneme olarak canlı.
 - Karar metninden tarih/tutar okuyup formu otomatik doldurma.
 - ~~Kendi alan adı~~ — **gerekmiyor**, adliye `github.io`'yu açtı (26.08.2026).
   Yalnız başka bir kurumda engel çıkarsa ve (a)/(b) yolları da yetmezse gündeme
