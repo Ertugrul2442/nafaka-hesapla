@@ -345,6 +345,10 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
 #icVekKutu{display:grid;gap:6px;margin-top:8px}
 #icVekKutu[hidden]{display:none}
 #icVekKutu > label:not(.tik){font-size:13px;font-weight:500;margin:4px 0 -2px}
+.uyapKutu{display:grid;gap:6px;padding:12px;border:1px solid var(--cizgi);border-radius:4px;background:var(--yuzey-ic)}
+.uyapKutu > label:not(.tik){font-size:13px;font-weight:500;margin:4px 0 -2px}
+.uyapKutu .grupBaslik + .tik{margin-top:2px}
+.harcSira{grid-template-columns:1fr}
 </style>
 
 <div class="sayfa">
@@ -496,6 +500,29 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
           <input id="icTarih" type="date">
         </div>
 
+        <div class="alan uyapKutu">
+          <span class="grupBaslik">İcra dairesi programı (UYAP) gibi hesapla</span>
+          <label class="tik"><input type="checkbox" id="icUyapFaiz" checked> Faiz, son ödeme gününden sonra başlasın</label>
+          <p class="not">UYAP'ta ayın nafakası tahakkuk gününde borç olur, son ödeme günü bir ay sonranın bir gün öncesidir, faiz ancak ondan sonra işler. Kapatırsan faiz tahakkuk gününden başlar.</p>
+          <label class="tik"><input type="checkbox" id="icHarc" checked> Tahsil harcını borca ekle</label>
+          <div class="ikili harcSira">
+            <select id="icHarcOran" aria-label="Tahsil harcı oranı">
+              <option value="9.1" selected>%9,10 (UYAP dökümünde görülen)</option>
+              <option value="4.55">%4,55 (hacizden önce / maaş haczi)</option>
+              <option value="11.38">%11,38 (satışla tahsil)</option>
+            </select>
+          </div>
+          <p class="not">Her ayın nafakasına ve takipte kesinleşen miktara oranı kadar harç eklenir; faiz işletilmez, takip sonrası faize harç alınmaz. O ay içindeki ödeme o ayın harcını kapatmaz, sonraki ödemeler önce harcı ve faizi kapatır. Oranlar 2026 tarifesinden (98 Seri No. Harç Tebliği).</p>
+          <span class="grupBaslik">Takip bilgileri</span>
+          <label for="icTakipTarih">Takip tarihi (hesap başlangıcı)</label>
+          <input id="icTakipTarih" type="date">
+          <label for="icKesinAna">Takipte kesinleşen anapara (₺)</label>
+          <input id="icKesinAna" type="number" min="0" step="0.01" inputmode="decimal" placeholder="takipten önceki aylar toplamı">
+          <label for="icKesinFaiz">Takipte kesinleşen faiz (₺)</label>
+          <input id="icKesinFaiz" type="number" min="0" step="0.01" inputmode="decimal" placeholder="takip talebindeki işlemiş faiz">
+          <p class="not">Doldurursan: kesinleşen anapara takip tarihinden faiz işletir, kesinleşen faiz borca eklenir ama faiz doğurmaz. Bu durumda "Ödenmeyen ilk ay"ı takip ayı yap, takipten önceki aylar iki kez sayılmasın. Boş bırakırsan aylar yalnız aşağıdan gelir.</p>
+        </div>
+
         <div class="alan">
           <label for="icIlkAy">Ödenmeyen ilk ay</label>
           <div class="ikili">
@@ -614,6 +641,7 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
                 <th scope="col">Gün</th>
                 <th scope="col">İşlemiş faiz</th>
                 <th scope="col">Kalan faiz</th>
+                <th scope="col">Harç</th>
               </tr></thead>
               <tbody id="icTaksitler"></tbody>
               <tfoot id="icTaksitToplam"></tfoot>
@@ -1374,12 +1402,16 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
     }
     var T = gun(girdi.hesapTarihi);
     var vadesizler = [];
+    // vade = borcun dogdugu gun (UYAP'ta "tahakkuk"). faizBas verilmisse faiz o gun baslar
+    // (UYAP'ta son odeme gununun ertesi = bir sonraki tahakkuk), verilmemisse vadeden.
+    // g faizin ve odemeye esligin olcusu; borc olup olmadigini vade belirler.
     var taksitler = girdi.taksitler.map(function (t, i) {
-      return { sira: i, kod: t.kod, vade: t.vade, g: gun(t.vade), tutar: +t.tutar,
-               kalan: +t.tutar, odenenAnapara: 0,
-               faizToplam: 0, faizOdenen: 0, sonIslem: gun(t.vade), kaynak: [] };
+      var fb = gun(t.faizBas || t.vade);
+      return { sira: i, kod: t.kod, vade: t.vade, faizBas: t.faizBas || t.vade, g: fb, borcG: gun(t.vade),
+               tutar: +t.tutar, kalan: +t.tutar, odenenAnapara: 0,
+               faizToplam: 0, faizOdenen: 0, sonIslem: fb, kaynak: [] };
     }).filter(function (t) {
-      if (t.g > T) { vadesizler.push(t); return false; }
+      if (t.borcG > T) { vadesizler.push(t); return false; }
       return true;
     });
     // Vadesi gelmemis taksit henuz borc degil; cikariyoruz ama sessizce degil.
@@ -1410,7 +1442,7 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
       return true;
     }).map(function (m, i) {
       return { sira: i, tarih: m.tarih, g: gun(m.tarih), tutar: +m.tutar, kalan: +m.tutar,
-               aciklama: m.aciklama || "Masraf", kaynak: [] };
+               aciklama: m.aciklama || "Masraf", tur: m.tur || "masraf", kod: m.kod || null, kaynak: [] };
     }).sort(function (a, b) { return a.g - b.g || a.sira - b.sira; });
     if (masrafTarihsiz) uyarilar.push(masrafTarihsiz + " masrafın tarihi girilmediği için hesaba katılmadı.");
     if (masrafSonra) uyarilar.push(masrafSonra + " masraf hesap tarihinden sonra olduğu için hesaba katılmadı.");
@@ -1549,7 +1581,8 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
                  return { tarih: x.tarih, anapara: kurus(x.anapara), faiz: kurus(x.faiz) };
                }),
                // faizin fiilen isledigi gun: anapara kapandiysa kapandigi gune kadar
-               gun: (k.kapanis !== undefined ? k.kapanis : h.T) - k.g,
+               gun: Math.max(0, (k.kapanis !== undefined ? k.kapanis : h.T) - k.g),
+               faizBas: k.faizBas,
                kapandi: k.kapanis !== undefined ? tarih(k.kapanis) : null };
     });
     function top(alan) { return kurus(satirlar.reduce(function (t, k) { return t + k[alan]; }, 0)); }
@@ -1558,20 +1591,34 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
       return { tarih: o.tarih, tutar: o.tutar, masrafa: masrafa, faize: faize, ileri: ileri, artan: art,
                anaparaya: kurus(o.tutar - masrafa - faize - ileri - art) };
     });
-    var masraflar = h.masraflar.map(function (m) {
+    var tumMasraf = h.masraflar.map(function (m) {
       var tutar = kurus(m.tutar), odenen = kurus(m.tutar - m.kalan);
-      return { tarih: m.tarih, aciklama: m.aciklama, tutar: tutar, odenen: odenen,
+      return { tarih: m.tarih, aciklama: m.aciklama, tur: m.tur, kod: m.kod, tutar: tutar, odenen: odenen,
                kalan: kurus(tutar - odenen),
                kaynak: m.kaynak.map(function (x) { return { tarih: x.tarih, tutar: kurus(x.anapara) }; }) };
     });
-    var kalanMasraf = kurus(masraflar.reduce(function (t, m) { return t + m.kalan; }, 0));
+    // Tahsil harci kalemleri masraf gibi isler ama ayri gosterilir (ay ay dokumde kendi sutunu)
+    var masraflar = tumMasraf.filter(function (m) { return m.tur !== "harc"; });
+    var harclar = tumMasraf.filter(function (m) { return m.tur === "harc"; });
+    var harcAy = {};
+    harclar.forEach(function (m) { if (m.kod) harcAy[m.kod] = m; });
+    satirlar.forEach(function (k) {
+      var hm = harcAy[k.kod];
+      k.harc = hm ? hm.tutar : 0; k.harcKalan = hm ? hm.kalan : 0;
+    });
+    function topla(l, a) { return kurus(l.reduce(function (t, m) { return t + m[a]; }, 0)); }
+    var kalanHarc = topla(harclar, "kalan");
+    var kalanMasraf = kurus(topla(masraflar, "kalan") + kalanHarc);
     var kalanAnapara = top("kalan"), kalanFaiz = top("faizKalan");
     return {
       taksitler: satirlar,
       odemeler: odemeler,
       masraflar: masraflar,
-      toplamMasraf: kurus(masraflar.reduce(function (t, m) { return t + m.tutar; }, 0)),
-      kalanMasraf: kalanMasraf,
+      toplamMasraf: topla(masraflar, "tutar"),
+      kalanMasraf: kalanMasraf,            // harc dahil (toplam alacaga giren butun feriler)
+      kalanSadeMasraf: topla(masraflar, "kalan"),
+      toplamHarc: topla(harclar, "tutar"),
+      kalanHarc: kalanHarc,
       toplamTaksit: top("tutar"),
       odenen: kurus(odemeKayit.reduce(function (t, o) { return t + o.tutar; }, 0)),
       kalanAnapara: kalanAnapara,
@@ -1590,20 +1637,53 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
 
   /* Nafaka cetvelinin (NafakaHesap.hesapla) satirlarindan aylik taksit listesi.
      vadeGunu ayin gunu; ay o kadar uzun degilse ayin son gunu alinir. */
-  function taksitUret(satirlar, ilkKod, vadeGunu) {
+  // y yilinin a ayinda (a 13 olabilir -> sonraki yil) gun g; ay kisaysa son gun.
+  function ayGunu(y, a, g) {
+    if (a > 12) { a -= 12; y++; }
+    var ayUzun = new Date(Date.UTC(y, a, 0)).getUTCDate();
+    var gg = Math.min(Math.max(1, g | 0), ayUzun);
+    return y + "-" + (a < 10 ? "0" + a : a) + "-" + (gg < 10 ? "0" + gg : gg);
+  }
+
+  /* secenek.faizBirAySonra (UYAP kurali, 26.10.2026'da gercek bir UYAP dokumunden
+     35 hucre tutturularak dogrulandi): ayin nafakasi vadeGunu'nde tahakkuk eder (borc olur),
+     son odeme gunu bir ay sonranin bir gun oncesidir, faiz bir ay sonraki ayni gunden baslar. */
+  function taksitUret(satirlar, ilkKod, vadeGunu, secenek) {
+    var birAy = !!(secenek && secenek.faizBirAySonra);
     var liste = [];
     satirlar.forEach(function (r) {
       var y = r.basYil, a = r.basAy;
       while (y * 12 + a <= r.sonYil * 12 + r.sonAy) {
         var kod = y + "-" + (a < 10 ? "0" + a : a);
         if (!ilkKod || kod >= ilkKod) {
-          var ayUzun = new Date(Date.UTC(y, a, 0)).getUTCDate();
-          var g = Math.min(Math.max(1, vadeGunu | 0), ayUzun);
           // Taksit kurusa yuvarlanir: cetvelde yazan ve fiilen odenen tutar budur.
-          liste.push({ kod: kod, vade: kod + "-" + (g < 10 ? "0" + g : g), tutar: kurus(r.aylikTutar) });
+          var t = { kod: kod, vade: ayGunu(y, a, vadeGunu), tutar: kurus(r.aylikTutar) };
+          if (birAy) t.faizBas = ayGunu(y, a + 1, vadeGunu);
+          liste.push(t);
         }
         a++; if (a > 12) { a = 1; y++; }
       }
+    });
+    return liste;
+  }
+
+  /* Tahsil harcini UYAP gibi borca ekleyen masraf kalemleri (26.10.2026, UYAP dokumunden):
+       harc = oran x (o ayin nafakasi); takipte kesinlesen miktar (anapara + takip oncesi faiz)
+       varsa onun harci ilk ayinkine eklenir. Takip sonrasi faiz harca girmez (toplam harc
+       = %9,10 x (kesinlesen + tahakkuk eden nafaka), belgede kurusu kurusuna).
+       Tarih: ayin son odeme gunu -> o ay icinde yapilan odeme o ayin harcini KAPATMAZ
+       (belgede 2. ve 3. satir boyle); ama hesap tarihi son odemeden onceyse harc yine
+       borca girer (belgenin ozetinde son ayin harci da var) -> tarih hesap gunune cekilir. */
+  function tahsilHarclari(taksitler, oran, hesapTarihi, kesinlesen) {
+    var liste = [], ek = kesinlesen && +kesinlesen.tutar > 0 ? +kesinlesen.tutar : 0;
+    taksitler.forEach(function (t, i) {
+      var p = t.vade.split("-");
+      var sonOdeme = tarih(gun(ayGunu(+p[0], +p[1] + 1, +p[2])) - 1);
+      var matrah = t.tutar + (i === 0 ? ek : 0);
+      liste.push({ tarih: sonOdeme > hesapTarihi && t.vade <= hesapTarihi ? hesapTarihi : sonOdeme,
+                   tutar: kurus(matrah * oran / 100), tur: "harc", kod: t.kod,
+                   aciklama: "Tahsil harcı %" + String(oran).replace(".", ",") + " · " + t.kod +
+                             (i === 0 && ek ? " (+ takipte kesinleşen)" : "") });
     });
     return liste;
   }
@@ -1644,7 +1724,7 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
   }
 
   var api = { hesapla: hesapla, taksitUret: taksitUret, faizHesapla: faizHesapla, gun: gun, tarih: tarih,
-              vekaletUcreti: vekaletUcreti, VEKALET: VEKALET };
+              vekaletUcreti: vekaletUcreti, VEKALET: VEKALET, tahsilHarclari: tahsilHarclari, ayGunu: ayGunu };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else kok.IcraHesap = api;
 })(this);
@@ -1748,7 +1828,7 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
   // ---- vekalet ucreti ----
   $("icVekil").addEventListener("change", function () {
     $("icVekKutu").hidden = !this.checked;
-    if (this.checked && !$("icVekTarih").value) $("icVekTarih").value = $("icTarih").value;
+    if (this.checked && !$("icVekTarih").value) $("icVekTarih").value = $("icTakipTarih").value || $("icTarih").value;
   });
   $("icVekDoldur").addEventListener("click", function () {
     var g = girdiKur();
@@ -1756,7 +1836,9 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
     var T = $("icVekTarih").value || g.temel.hesapTarihi;
     // Takip tarihindeki alacak: o gune kadar vadesi gelen taksitler + islemis faiz (masrafsiz)
     var r = I.hesapla(Object.assign({}, g.temel, { hesapTarihi: T, masraflar: [] }));
-    $("icVekTutar").value = (r.kalanAnapara + r.kalanFaiz).toFixed(2);
+    // takipte kesinlesen faiz motor icin masraf kalemidir; takip tutarina o da girer
+    var kesinFaiz = $("icTakipTarih").value && $("icTakipTarih").value <= T ? (+$("icKesinFaiz").value || 0) : 0;
+    $("icVekTutar").value = (r.kalanAnapara + r.kalanFaiz + kesinFaiz).toFixed(2);
     $("icVekAsil").value = r.kalanAnapara.toFixed(2);
     hesapla();
   });
@@ -1810,13 +1892,35 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
     nafaka.uyarilar.forEach(function (u) { uyarilar.push(u); });
     var ilkY = +$("icIlkYil").value, ilkA = +$("icIlkAy").value;
     var ilkKod = ilkY + "-" + (ilkA < 10 ? "0" + ilkA : ilkA);
-    var taksitler = I.taksitUret(nafaka.satirlar, ilkKod, +$("icVade").value || 1);
+    var uyapFaiz = $("icUyapFaiz").checked;
+    var aylik = I.taksitUret(nafaka.satirlar, ilkKod, +$("icVade").value || 1, { faizBirAySonra: uyapFaiz });
+    // Takipte kesinlesen: anapara takip tarihinden faiz isletir, faizi borca girer ama faiz dogurmaz
+    var takip = $("icTakipTarih").value, kAna = +$("icKesinAna").value || 0, kFaiz = +$("icKesinFaiz").value || 0;
+    var taksitler = aylik.slice(), kesinMasraf = [];
+    if ((kAna > 0 || kFaiz > 0) && !takip) {
+      uyarilar.push("Takipte kesinleşen miktar girildi ama takip tarihi yok; kesinleşen miktar hesaba katılmadı.");
+      kAna = kFaiz = 0;
+    }
+    if (kAna > 0) taksitler.unshift({ kod: "kesinlesen", vade: takip, tutar: kAna });
+    if (kFaiz > 0) kesinMasraf.push({ tarih: takip, tutar: kFaiz, aciklama: "Takipte kesinleşen faiz" });
+    if (kAna > 0 && aylik.length && aylik[0].vade < takip) {
+      uyarilar.push("Ödenmeyen ilk ay takip tarihinden önce; o aylar hem kesinleşen anaparada hem ay ay listede sayılıyor olabilir.");
+    }
+    var harclar = [];
+    if ($("icHarc").checked) {
+      harclar = I.tahsilHarclari(aylik, +$("icHarcOran").value, T, { tutar: kAna + kFaiz });
+      if (!aylik.length && kAna + kFaiz > 0) {   // ay yoksa kesinlesenin harci tek basina
+        harclar.push({ tarih: takip, tutar: Math.round((kAna + kFaiz) * +$("icHarcOran").value) / 100,
+                       tur: "harc", aciklama: "Tahsil harcı · takipte kesinleşen" });
+      }
+    }
     var tutarsiz = masraflar.filter(function (m) { return !(m.tutar > 0); }).length;
     if (tutarsiz) uyarilar.push(tutarsiz + " masrafın tutarı girilmedi, hesaba katılmadı.");
     var masrafListe = masraflar.filter(function (m) { return m.tutar > 0; })
       .map(function (m) { return { tarih: m.tarih, tutar: m.tutar, aciklama: m.aciklama || "Masraf" }; });
     var vek = vekalet();
     if (vek) { masrafListe.push(vek.masraf); if (vek.uyari) uyarilar.push(vek.uyari); }
+    masrafListe = kesinMasraf.concat(masrafListe, harclar);
     return {
       uyarilar: uyarilar,
       temel: {
@@ -1868,7 +1972,8 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
       ["Yapılan ödeme", tl(s.odenen)],
       ["Kalan anapara", tl(s.kalanAnapara)],
       ["Kalan faiz", tl(s.kalanFaiz)],
-      ["Kalan masraf", tl(s.kalanMasraf)],
+      ["Kalan masraf", tl(s.kalanSadeMasraf)],
+      ["Kalan harç", tl(s.kalanHarc)],
       ["Toplam alacak", tl(s.toplamAlacak), "bas"]
     ].map(function (k) {
       return '<div class="' + (k[2] || "") + '"><div class="et">' + k[0] + '</div><div class="dg">' + k[1] + "</div></div>";
@@ -1892,7 +1997,7 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
         '<td class="sayi tutar">' + tl(r.toplamAlacak) +
         '<span class="fark refay ' + (fark > 0.005 ? "arti" : "") + '">' + farkYazi + "</span></td></tr>";
     }).join("") + (s.kalanMasraf > 0.005
-      ? '<tr><td colspan="4"><small>Toplamlara ' + tl(s.kalanMasraf) + " kalan masraf dahil. Masraf her ödemeden önce düşüldüğü için üç yöntemde de aynıdır.</small></td></tr>"
+      ? '<tr><td colspan="4"><small>Toplamlara ' + tl(s.kalanMasraf) + " kalan masraf ve harç dahil. Bunlar her ödemeden önce düşüldüğü için üç yöntemde de aynıdır.</small></td></tr>"
       : "");
 
     // taksit dokumu
@@ -1901,6 +2006,7 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
     function hucre(x) { return '<td class="sayi' + (Math.abs(x) < 0.005 ? " sifir" : "") + '">' + para.format(x) + "</td>"; }
     $("icTaksitler").innerHTML = s.taksitler.map(function (k) {
       var p = k.kod.split("-");
+      var ad = k.kod === "kesinlesen" ? "Takipte kesinleşen anapara" : H.AY_ADI[+p[1] - 1] + " " + p[0];
       // Bu aya hangi odemeden ne dustugu, ay adinin altinda
       var kaynak = (k.kaynak || []).map(function (x) {
         var parca = [];
@@ -1908,18 +2014,21 @@ button:focus-visible,.dugme:focus-visible{outline:2px solid var(--aksan);outline
         if (x.faiz > 0.005) parca.push(para.format(x.faiz) + " faiz");
         return gunAyYil(x.tarih) + " ödemesinden " + parca.join(" + ");
       }).join("<br>");
-      return "<tr><td class=\"donem\">" + H.AY_ADI[+p[1] - 1] + " " + p[0] +
+      return "<tr><td class=\"donem\">" + ad +
         (kaynak ? "<small>" + kaynak + (ornekMi ? " (örnek ödeme)" : "") + "</small>" : "") + "</td>" +
-        '<td class="sayi">' + gunAyYil(k.vade) + "</td>" +
+        '<td class="sayi">' + gunAyYil(k.vade) +
+          (k.faizBas && k.faizBas !== k.vade ? "<small>faiz " + gunAyYil(k.faizBas) + "'den</small>" : "") + "</td>" +
         hucre(k.tutar) + hucre(k.odenenAnapara) + hucre(k.kalan) +
         // Gun = faizin fiilen isledigi gun. Anapara kapandiysa orada durur; aksi hesap tarihine kadar.
         '<td class="sayi">' + (toplu ? "–" : k.gun +
           (k.kapandi ? "<small>" + gunAyYil(k.kapandi) + "'e kadar</small>" : "")) + "</td>" +
-        hucre(k.faizToplam) + hucre(k.faizKalan) + "</tr>";
-    }).join("") || '<tr><td colspan="8">Bu tarihler arasında vadesi gelmiş taksit yok.</td></tr>';
+        hucre(k.faizToplam) + hucre(k.faizKalan) +
+        '<td class="sayi' + (k.harc < 0.005 ? " sifir" : "") + '">' + para.format(k.harc) +
+          (k.harc > 0.005 && k.harcKalan < 0.005 ? "<small>ödendi</small>" : "") + "</td></tr>";
+    }).join("") || '<tr><td colspan="9">Bu tarihler arasında vadesi gelmiş taksit yok.</td></tr>';
     $("icTaksitToplam").innerHTML = s.taksitler.length
       ? "<tr><td>Toplam</td><td></td>" + hucre(s.toplamTaksit) + hucre(s.toplamTaksit - s.kalanAnapara) +
-        hucre(s.kalanAnapara) + "<td></td>" + hucre(s.faizToplam) + hucre(s.kalanFaiz) + "</tr>"
+        hucre(s.kalanAnapara) + "<td></td>" + hucre(s.faizToplam) + hucre(s.kalanFaiz) + hucre(s.toplamHarc) + "</tr>"
       : "";
 
     // masraf dokumu (masraf yoksa bolum gizli)
