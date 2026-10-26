@@ -30,6 +30,15 @@ Bu oturumda üç iş yapıldı. Ayrıntıları aşağıdaki bölümlerde, burada
    (`docs/icra.html`, ana sayfadan bağlantı yok), ayrıca Ertuğrul'un özel
    artifact'ında. → "İcra hesabı DENEMESİ" bölümü.
 
+**26.10.2026 — GERÇEK UYAP DÖKÜMÜ GELDİ VE ÇÖZÜLDÜ.** Ertuğrul icra
+dairesinden bir "Nafaka Dosya Hesabı" çıktısının **1. sayfasını** getirdi
+(fotoğraf; dosya no içeriyor → depoya/siteye KOYMA). Kurallar tersine
+çözüldü, 35 hücre 1 kuruş içinde tuttu; icra.html'e "UYAP gibi hesapla"
+eklendi ve aynı dosyayı 2 kuruş içinde üretiyor. Ayrıntı: İcra bölümünde
+"UYAP DÖKÜMÜ". **Sıradaki:** belgenin **diğer sayfaları** istenecek → bütün
+dosya (96 ay, bakiye 56.753,38) baştan üretilecek; o zaman nafaka artışının
+da (ana site!) UYAP'la aynı olup olmadığı ölçülecek.
+
 **18.10.2026:** ana site baştan doğrulandı (960 dosya bağımsız hesapla
 birebir, veri TÜİK'in bilinen rakamlarıyla aynı, canlı = yerel). İcra
 dökümü doğrulandı ve iki gösterim kusuru düzeltildi → İcra bölümü.
@@ -634,7 +643,52 @@ O kuralla doğrulanmış örnek: Ocak 2022'de 1.000 ₺ → **5.668,14 ₺** (20
   → 9.265/9.997 masrafa, 572,05 faize, kalanı anaparaya — elle tuttu.
   **Her Kasım:** yeni AAÜT → `VEKALET` güncelle. **Her Ocak:** yeni harç
   tebliği → `BASVURMA` (`arayuz.js`) güncelle.
-- **YARIN (19.10) SORULACAKLAR — cevaplar gelince koda girecek:**
+- **UYAP DÖKÜMÜ — 26.10.2026 (Konya 4. İcra, nafaka dosyası, sayfa 1 / ?):**
+  Sütunlar: Tahakkuk · Son Ödeme · Nafaka · Harca Esas · Harç Oranı · Harç ·
+  Faize Esas · Faiz · Masraf · Ödenecek · Tahsilat · Kalan Faize Esas ·
+  Kalan Feriler · Net Ödenecek. Çözüm betiği: `icra_deneme/uyap_coz.py`
+  (git dışı). **Ölçülen kurallar** (5 satır, 35 hücre, ≤1 kuruş):
+  1. Nafaka tahakkuk gününde (07) borç olur; son ödeme = bir ay sonra − 1
+     gün; **faiz bir sonraki tahakkuktan başlar.** Bizim eski varsayılan
+     faizi bir ay erken başlatıyordu.
+  2. Faiz %9, 365 gün, yalnız "faize esas" (havuz anapara) üzerinden.
+  3. **Tahsil harcı %9,10** × (takipte kesinleşen + her ayın nafakası);
+     takip sonrası faize harç yok (özetteki 62.601,63 = %9,10 ×
+     (8.629,01 + 679.300,98), kuruşu kuruşuna). Harç faiz doğurmaz.
+  4. O ayın harcı **o ayın ödemesinden sonra** eklenir (2. satırda veriye
+     bakılarak bulundu, **3. satır bağımsız doğruladı**). Masraf ödemeden önce.
+  5. Ödeme: önce **bütün feriler** (eski faiz, harç, masraf, vekâlet,
+     takip öncesi faiz) + o güne kadarki faiz, sonra anapara → **A yolu.**
+     Bekleyen 1. soru bu dairenin programı için **cevaplandı: A.** Koda
+     dokunulmadı (zaten A).
+  6. Takipte kesinleşen 8.629,01 = 8.400 anapara (7 ay) + 229,01 faiz;
+     anapara takip tarihinden faiz işletir, faiz kısmı işletmez.
+  Belgede ödeme tarihi yok; her dönemde iki hücreyi birden tutan **tek** gün
+  bulundu (21.12.2018, 15.01.2019). **Kör test:** kural 1'i bozunca 14,
+  harcı kapatınca 14, ödemeyi 1 gün kaydırınca 9 kontrol düşüyor.
+  **Çözülemeyen:** vekâlet 8.629,01 = kesinleşen miktara kuruşu kuruşuna
+  eşit — neden bilinmiyor (2018 tarifesinin maktu ücreti değil); sorulacak.
+  Nafaka toplamı 679.300,98'i ana sitenin 136 ayar kombinasyonundan hiçbiri
+  vermedi (en yakın −%1,5, Yİ-ÜFE yıllık, Nisan 2018) → diğer sayfalar
+  (yıllık tutarlar) gelmeden "ana site yanlış" ya da "doğru" denemez.
+  **Koda girenler (commit `27d46a6`):** `taksitUret(..., {faizBirAySonra})`
+  → taksitte `vade` (borç) ve `faizBas` (faiz) ayrı; `tahsilHarclari()`
+  (tarih = son ödeme, hesap tarihi ondan önceyse hesap günü); arayüzde
+  "UYAP gibi hesapla" kutusu (**varsayılan açık**), takip tarihi +
+  kesinleşen anapara/faiz, dökümde Harç sütunu, özette Kalan harç.
+  Test: `test_icra.js` belgenin 15 rakamını sayfanın fonksiyonlarıyla
+  üretiyor (2 kuruş tolerans: UYAP havuzda dönem dönem yuvarlıyor, biz ay
+  ay; yuvarlamasız iki hesap 0,0001 ₺ farkla aynı). Ekrandan girildi:
+  07.04.2019'da 11.011,17 (beklenen 11.011,19). Gün gün sim'e `faizBas`
+  eklendi: 503 vaka (276'sı bir-ay-sonra), en büyük fark 2 kuruş.
+- **19.10 SORULARININ DURUMU (UYAP dökümüne göre):** 1 → A ✓ ·
+  3 → harç borca ekleniyor, %9,10 ✓ · 4 → masrafa/vekâlete/harca faiz yok ✓
+  · 5 → cezaevi harcı dökümde yok (borçluya yüklenmiyor) ✓ · 7 → masraf
+  ödemeden önce düşülüyor ✓. **Açık kalan:** 2 (peşin harç — dökümde
+  görünmüyor, ilamlıda alınmıyor olmalı), 6 (vekâlet tutarı nereden),
+  8 (tebligat). Bunlar yalnız bir dairenin bir dosyasından; başka daire
+  farklı ayar kullanabilir (harç oranı seçilebilir bırakıldı).
+- **ESKİ: 19.10 SORULACAKLAR — cevaplar gelince koda girecek:**
   1. Kısmi ödeme aylara nasıl dağıtılıyor: A (önce bütün faizler) mı,
      B (ay ay kapat) mı? Örnek 42.377,42 / 42.090,21. Dayanak var mı?
   2. Nafaka (ilamlı) takibinde peşin harç (binde 5) alınıyor mu?
@@ -664,7 +718,7 @@ toplamdan tek seferde mi; 365/360 gün) ve kısmi ödemelerin mahsubu
   → Chrome'da aç (Playwright, `channel="chrome"`), hata/taşma bak → Artifact
   aracıyla **aynı dosya yolundan** yeniden yayınla (link aynı kalır; başka
   oturumdan yayınlanacaksa `url` parametresiyle).
-- Özel artifact (yalnız Ertuğrul, **sürüm 7**, 18.10.2026): https://claude.ai/code/artifact/c571798d-334d-41cf-900b-7d42be74bf2f
+- Özel artifact (yalnız Ertuğrul, **sürüm 8**, 26.10.2026): https://claude.ai/code/artifact/c571798d-334d-41cf-900b-7d42be74bf2f
 - **18.10.2026 doğrulaması — ay ay döküm (ölçüldü):** motordan bağımsız,
   *gün gün* işleyen Python simülasyonu yazıldı; 503 rastgele dosyada
   (13.351 ay satırı, 1.401 ödeme, dört yöntem kombinasyonu) kalan anapara,
