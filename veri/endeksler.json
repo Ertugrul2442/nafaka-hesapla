@@ -1,6 +1,6 @@
 {
  "kaynak": "TÜİK Veri Portalı (databrowser2.tuik.gov.tr/api/core)",
- "cekilme_tarihi": "2026-10-05T07:05:14+00:00",
+ "cekilme_tarihi": "2026-11-03T07:05:16+00:00",
  "aciklama": {
   "endeks": "Fiyat endeksi",
   "yillik": "Bir önceki yılın aynı ayına göre değişim (%)",
@@ -11,7 +11,7 @@
    "ad": "TÜFE (Tüketici Fiyat Endeksi)",
    "veri_seti": "TR,DF_TUFE_SDMX_TT10,1.0",
    "ilk_ay": "2005-01",
-   "son_ay": "2026-09",
+   "son_ay": "2026-10",
    "aylik": {
     "2005-01": {
      "endeks": 3.596523,
@@ -1317,6 +1317,11 @@
      "endeks": 137.23,
      "yillik": 29.73,
      "ort12": 31.49
+    },
+    "2026-10": {
+     "endeks": 140.77,
+     "yillik": 29.77,
+     "ort12": 31.23
     }
    },
    "yillik_aralik": {
@@ -1410,7 +1415,7 @@
    "ad": "Yİ-ÜFE (Yurt İçi Üretici Fiyat Endeksi)",
    "veri_seti": "TR,DF_YIUFE_EDO_V1,1.0",
    "ilk_ay": "1982-01",
-   "son_ay": "2026-09",
+   "son_ay": "2026-10",
    "aylik": {
     "1982-01": {
      "endeks": 0.006292,
@@ -4073,6 +4078,11 @@
      "endeks": 5901.26,
      "yillik": 27.38,
      "ort12": 27.81
+    },
+    "2026-10": {
+     "endeks": 5998.51,
+     "yillik": 27.41,
+     "ort12": 27.83
     }
    },
    "yillik_aralik": {
